@@ -10,8 +10,6 @@ import SignIn from "./features/auth/SignIn";
 import ProtectedRoute from "./components/protected-route/ProtectedRoute";
 
 import SidebarLayout from "./components/sidebar-layout/SidebarLayout";
-import HealthCheck from "./features/account/healthCheck/HealthCheck";
-import SystemStatistics from "./features/account/systemStatistics/SystemStatistics";
 import Search from "./features/account/search/Search";
 
 import SearchDetails from "./features/account/search/SearchDetails";
@@ -97,8 +95,7 @@ const App: React.FC = () => {
         >
           <Route path="profile" element={<Profile />} />
           <Route path="query" element={<Query />} />
-          <Route path="health-check" element={<HealthCheck />} />
-          <Route path="system-stats" element={<SystemStatistics />} />
+
           <Route path="plans" element={<Plans />} />
 
           <Route

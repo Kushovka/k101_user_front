@@ -13,6 +13,6 @@ export const getQuery = async (page = 1, pageSize = 10) => {
       },
     },
   );
-  console.log(res.data);
+  console.log(res);
   return res.data;
 };

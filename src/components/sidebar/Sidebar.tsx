@@ -1,11 +1,9 @@
 import { FaRegCircleUser } from "react-icons/fa6";
-import { MdDownloading, MdOutlineAnalytics } from "react-icons/md";
 import { IoDocumentTextOutline, IoExitOutline } from "react-icons/io5";
 import { IoIosSearch } from "react-icons/io";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { GoChevronRight } from "react-icons/go";
 import { MdAttachMoney } from "react-icons/md";
-import { FaUsers } from "react-icons/fa";
 
 import clsx from "clsx";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -34,20 +32,9 @@ const Sidebar: React.FC = () => {
   const links: SidebarLink[] = [
     { name: "Профиль", icon: <FaRegCircleUser />, path: "/account/profile" },
     {
-      name: "Health Check",
-      icon: <IoDocumentTextOutline />,
-      path: "/account/health-check",
-    },
-    {
       name: "История запросов",
       icon: <IoDocumentTextOutline />,
       path: "/account/query",
-      disabled: !user?.is_email_verified,
-    },
-    {
-      name: "Системная статистика",
-      icon: <MdOutlineAnalytics />,
-      path: "/account/system-stats",
       disabled: !user?.is_email_verified,
     },
     {

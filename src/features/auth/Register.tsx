@@ -27,35 +27,33 @@ export default function Register() {
   const navigate = useNavigate();
   const [notify, setNotify] = useState<NotifyState>(null);
 
+  const token = new URLSearchParams(location.search).get("token");
+
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const payload = {
-      username: data.username.trim(),
-      password: data.password.trim(),
-    };
+    if (!token) {
+      setNotify({ type: "error", message: "Ссылка устарела или неверна" });
+      return;
+    }
 
     try {
-      await axios.post(`${API_URL}/api/v1/auth/register`, payload);
+      await axios.post(`${API_URL}/api/v1/auth/setup-password`, {
+        token,
+        username: data.username.trim(),
+        password: data.password.trim(),
+      });
 
       setNotify({
-        message: "Регистрация успешна! Теперь войдите",
         type: "access",
+        message: "Пароль установлен! Теперь войдите",
       });
 
       setTimeout(() => navigate("/sign-in"), 800);
     } catch (err: any) {
       console.log(err?.response?.data);
-
-      if (err?.response?.status === 422) {
-        setNotify({
-          message: "Неверные данные. Проверьте форму",
-          type: "error",
-        });
-      } else {
-        setNotify({
-          message: "Ошибка регистрации",
-          type: "error",
-        });
-      }
+      setNotify({
+        type: "error",
+        message: "Ошибка регистрации",
+      });
     }
   };
 
