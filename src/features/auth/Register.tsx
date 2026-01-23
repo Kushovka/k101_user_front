@@ -1,0 +1,106 @@
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import axios from "axios";
+import Toast from "../../components/toast/Toast";
+
+const API_URL = import.meta.env.VITE_USER_API_URL;
+
+type FormValues = {
+  username: string;
+  password: string;
+};
+
+type NotifyState = {
+  message: string;
+  type: "access" | "error";
+} | null;
+
+export default function Register() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, touchedFields },
+  } = useForm<FormValues>();
+
+  const navigate = useNavigate();
+  const [notify, setNotify] = useState<NotifyState>(null);
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    const payload = {
+      username: data.username.trim(),
+      password: data.password.trim(),
+    };
+
+    try {
+      await axios.post(`${API_URL}/api/v1/auth/register`, payload);
+
+      setNotify({
+        message: "Регистрация успешна! Теперь войдите",
+        type: "access",
+      });
+
+      setTimeout(() => navigate("/sign-in"), 800);
+    } catch (err: any) {
+      console.log(err?.response?.data);
+
+      if (err?.response?.status === 422) {
+        setNotify({
+          message: "Неверные данные. Проверьте форму",
+          type: "error",
+        });
+      } else {
+        setNotify({
+          message: "Ошибка регистрации",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col items-center justify-center h-screen"
+    >
+      <form
+        className="relative flex flex-col gap-4 p-8 bg-white rounded w-80"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <h3 className="text-2xl text-black/80 text-center mb-2">Регистрация</h3>
+
+        <input
+          type="text"
+          placeholder="Username"
+          className="border p-2 rounded w-full"
+          {...register("username", { required: true, minLength: 4 })}
+        />
+
+        <input
+          type="password"
+          placeholder="Пароль"
+          className="border p-2 rounded w-full"
+          {...register("password", { required: true, minLength: 4 })}
+        />
+
+        <button
+          type="submit"
+          className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+        >
+          Зарегистрироваться
+        </button>
+      </form>
+
+      {notify && (
+        <Toast
+          message={notify.message}
+          type={notify.type}
+          onClose={() => setNotify(null)}
+        />
+      )}
+    </motion.section>
+  );
+}
