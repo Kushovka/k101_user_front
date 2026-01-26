@@ -32,8 +32,12 @@ export default function SignIn() {
 
   const onSubmit: SubmitHandler<SignInFormValues> = async (data) => {
     try {
-      await login(data.username, data.password);
-      setNotify(null);
+      const resp = await login(data.username, data.password);
+
+      if (resp.requires_2fa) {
+        navigate("/verify-2fa");
+        return;
+      }
 
       navigate("/account/profile");
     } catch (err) {

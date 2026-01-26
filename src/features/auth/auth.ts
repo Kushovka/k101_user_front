@@ -7,9 +7,16 @@ interface LoginRequest {
   password: string;
 }
 
+interface VerifyResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
 interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  requires_2fa: boolean;
+  session_id?: string;
 }
 
 interface LogoutRequest {
@@ -18,17 +25,21 @@ interface LogoutRequest {
 
 export const login = async (
   username: string,
-  password: string
+  password: string,
 ): Promise<LoginResponse> => {
   const res: AxiosResponse<LoginResponse> = await axios.post(
     `${API_URL}/api/v1/auth/login`,
-    { username, password } as LoginRequest
+    { username, password },
   );
 
-  const { access_token, refresh_token } = res.data;
+  const data = res.data;
 
-  localStorage.setItem("access_token", access_token);
-  localStorage.setItem("refresh_token", refresh_token);
+  if (!data.requires_2fa) {
+    localStorage.setItem("access_token", data.access_token!);
+    localStorage.setItem("refresh_token", data.refresh_token!);
+  } else {
+    localStorage.setItem("session_id", data.session_id!);
+  }
 
   console.log(res.data.access_token);
   console.log(res.data.refresh_token);
@@ -45,8 +56,20 @@ export const logout = async (): Promise<void> => {
 
   await axios.post<void, AxiosResponse<void>, LogoutRequest>(
     `${API_URL}/api/v1/auth/logout`,
-    { refresh_token: refreshToken }
+    { refresh_token: refreshToken },
   );
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
+};
+
+export const verify2FA = async (
+  code: string,
+  session_id: string,
+): Promise<VerifyResponse> => {
+  const res = await axios.post<VerifyResponse>(
+    `${API_URL}/api/v1/auth/verify-2fa`,
+    { code, session_id },
+  );
+
+  return res.data;
 };

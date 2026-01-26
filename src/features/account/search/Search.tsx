@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 
 import { SearchResultItem, SearchResponse } from "../../../types/search";
 import Toast from "../../../components/toast/Toast";
+import userApi from "../../../api/userApi";
 
 const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -119,11 +120,11 @@ const Search = () => {
 
       if (isName) {
         // ---- Обычный поиск по имени ----
-        endpoint = "/admin/search";
+        endpoint = "/api/v1/search/by-name";
         baseParams.name = raw;
       } else {
         // ---- Каскадный поиск ----
-        endpoint = "/admin/cascade/search";
+        endpoint = "/api/v1/search";
 
         if (isPhone) {
           baseParams.phone = normalizePhone(raw);
@@ -136,7 +137,7 @@ const Search = () => {
 
       const qs = new URLSearchParams(baseParams).toString();
 
-      const response = await adminApi.post<SearchResponse>(
+      const response = await userApi.post<SearchResponse>(
         `${endpoint}?${qs}`,
         null,
         { headers: getHeaders() },

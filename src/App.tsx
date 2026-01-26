@@ -23,7 +23,7 @@ import PaymentError from "./components/paymentFailed/PaymentFailed";
 import { CgDanger } from "react-icons/cg";
 import Register from "./features/auth/Register";
 import Query from "./features/account/query/Query";
-// import Verify2FA from "./features/auth/Verify2FA";
+import Verify2FA from "./features/auth/Verify2FA";
 
 const App: React.FC = () => {
   const isAuth = Boolean(localStorage.getItem("access_token"));
@@ -82,7 +82,7 @@ const App: React.FC = () => {
         <Route path="register" element={<Register />} />
         <Route path="successful-payment" element={<PaymentSuccess />} />
         <Route path="failed-payment" element={<PaymentError />} />
-        {/* <Route path="verify-2fa" element={<Verify2FA />} /> */}
+        <Route path="verify-2fa" element={<Verify2FA />} />
         <Route
           path="account"
           element={
