@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import EditableField from "../../../components/editable-field-props/EditableFieldProps";
-import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import clsx from "clsx";
-import { getCurrentUser } from "../../../api/users";
-import { updateProfile } from "../../../api/profile";
-import Toast from "../../../components/toast/Toast";
-import Loader from "../../../components/loader/Loader";
-import { ApiUser } from "../../../types/user";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createInvoice } from "../../../api/payments";
-import { motion } from "framer-motion";
+import { updateProfile } from "../../../api/profile";
+import { getCurrentUser } from "../../../api/users";
+import EditableField from "../../../components/editable-field-props/EditableFieldProps";
+import Loader from "../../../components/loader/Loader";
+import { useSidebar } from "../../../components/sidebar/SidebarContext";
+import Toast from "../../../components/toast/Toast";
+import { ApiUser } from "../../../types/user";
 
 type NotifyType = "access_pay" | "error_pay" | "access_save" | "error_save";
 
@@ -28,6 +28,7 @@ const Profile = () => {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
+
 
   const { isOpen } = useSidebar();
 
@@ -75,6 +76,7 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
 
   const handleDeposit = async () => {
     if (payInput < 100) {
@@ -212,7 +214,6 @@ const Profile = () => {
                   </span>
                 </p>
               </div>
-
               <button
                 onClick={saveProfile}
                 className="px-4 py-2 rounded-lg bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-600 transition"

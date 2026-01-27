@@ -1,15 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import Loader from "../../../components/loader/Loader";
-import { useNavigate } from "react-router-dom";
-import adminApi from "../../../api/adminApi";
-import { useSearch } from "./SearchContext";
-import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Loader from "../../../components/loader/Loader";
+import { useSidebar } from "../../../components/sidebar/SidebarContext";
+import { useSearch } from "./SearchContext";
 
-import { SearchResultItem, SearchResponse } from "../../../types/search";
-import Toast from "../../../components/toast/Toast";
 import userApi from "../../../api/userApi";
+import { SearchResponse, SearchResultItem } from "../../../types/search";
 
 const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -146,12 +144,20 @@ const Search = () => {
       setSeeSearch(true);
 
       if ("entity" in response.data) {
-        setRes(response.data as any);
-        setResult([response.data.entity as unknown as SearchResultItem]);
+        setRes(response.data);
+
+        // если ничего не найдено — показываем пусто
+        if (response.data.total_records_found === 0) {
+          setResult([]);
+        } else {
+          setResult([response.data.entity as any]);
+        }
+
         setTotalPages(response.data.total_pages ?? 1);
         setCurrentPage(page);
         return;
       }
+
       console.log(response.data);
       setRes(response.data);
       setResult(response.data.results ?? []);
@@ -160,18 +166,15 @@ const Search = () => {
     } catch (err: unknown) {
       console.error(err);
 
-      const response = (err as { response?: { status?: number } }).response;
-      let msg = "";
+      const maybeAxiosErr = err as { response?: { status?: number } };
 
-      if (!response) {
-        msg = "Сетевая ошибка или CORS";
-      } else if (response.status === 500) {
-        msg = "Сервер временно недоступен. Попробуйте позже.";
-      } else if (response.status === 403) {
-        msg = "Требуется подтвердить почту";
-      }
+      const status = maybeAxiosErr.response?.status;
 
-      setError(msg);
+      setError(
+        status === 500
+          ? "Сервер временно недоступен. Попробуйте позже."
+          : "Ошибка при загрузке пользователей",
+      );
     } finally {
       setLoading(false);
     }
@@ -199,9 +202,6 @@ const Search = () => {
     <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
       <div className="max-w-[1100px] w-full mx-auto flex flex-col gap-6">
         <h1 className="text-[20px] font-semibold text-slate-900">Поиск</h1>
-        {error && (
-          <Toast type="error" message={error} onClose={() => setError(null)} />
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -245,7 +245,9 @@ const Search = () => {
               Найдено:{" "}
               {res.count === 10
                 ? "Очень много совпадений, уточните запрос"
-                : res.count || res.total_pages}
+                : res.count || res.total_pages > 0
+                  ? res.total_pages
+                  : 0}
             </div>
           )}
 
@@ -261,11 +263,13 @@ const Search = () => {
 
             {loading && <Loader />}
 
-            {result.length === 0 && !loading && (
-              <div className="py-10 text-center text-slate-400 text-[14px]">
-                Нет результатов
-              </div>
-            )}
+            {result.length === 0 &&
+              res?.total_records_found === 0 &&
+              !loading && (
+                <div className="py-10 text-center text-slate-400 text-[14px]">
+                  Нет результатов
+                </div>
+              )}
 
             {result.map((item, index) => (
               <motion.div
@@ -283,9 +287,11 @@ const Search = () => {
                 <span className="text-center">{item.first_name || "-"}</span>
                 <span className="text-center">{item.middle_name || "-"}</span>
                 <span className="text-center truncate">
-                  {item.emails[0] || "-"}
+                  {item.emails?.[0] ?? item.email ?? "-"}
                 </span>
-                <span className="text-center">{item.phones[0] || "-"}</span>
+                <span className="text-center">
+                  {item.phones?.[0] ?? item.phone ?? "-"}
+                </span>
 
                 <span
                   className="text-cyan-600 font-medium text-center"

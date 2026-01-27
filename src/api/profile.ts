@@ -29,3 +29,4 @@ export const updateProfile = async (
   console.log(data);
   return data;
 };
+
