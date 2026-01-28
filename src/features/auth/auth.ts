@@ -73,3 +73,21 @@ export const verify2FA = async (
 
   return res.data;
 };
+
+export async function refreshTokens() {
+  const refresh = localStorage.getItem("refresh_token");
+  if (!refresh) return false;
+
+  try {
+    const res = await axios.post(`${API_URL}/api/v1/auth/refresh`, {
+      refresh_token: refresh,
+    });
+
+    localStorage.setItem("access_token", res.data.access_token);
+    localStorage.setItem("refresh_token", res.data.refresh_token);
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

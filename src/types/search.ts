@@ -12,7 +12,9 @@ export interface SearchResultItem {
   last_name?: string;
   middle_name?: string;
   emails: string[];
+  email: string;
   phones: string[];
+  phone: string;
 }
 
 export interface SearchResponse {
