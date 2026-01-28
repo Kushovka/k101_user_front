@@ -12,7 +12,7 @@ import {
 } from "../types/user";
 
 const getHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem("access_token_user");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Access token not found");
   }
