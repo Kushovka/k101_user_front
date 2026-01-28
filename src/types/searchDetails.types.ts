@@ -14,6 +14,8 @@ export interface SearchUser {
   middle_name?: string;
   age?: number;
   gender?: string;
+  entity_id: string;
+  person_id: string;
 
   birthdays?: string[];
   birthday?: string;
