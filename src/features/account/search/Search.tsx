@@ -7,6 +7,7 @@ import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import { useSearch } from "./SearchContext";
 
 import userApi from "../../../api/userApi";
+import Toast from "../../../components/toast/Toast";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 
 const getHeaders = () => ({
@@ -163,18 +164,17 @@ const Search = () => {
       setResult(response.data.results ?? []);
       setTotalPages(response.data.total_pages ?? 1);
       setCurrentPage(page);
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
 
-      const maybeAxiosErr = err as { response?: { status?: number } };
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
 
-      const status = maybeAxiosErr.response?.status;
-
-      setError(
-        status === 500
-          ? "Сервер временно недоступен. Попробуйте позже."
-          : "Ошибка при загрузке пользователей",
-      );
+      if (status === 402) {
+        setError("Недостаточно средств");
+      } else {
+        setError(detail || "Произошла ошибка");
+      }
     } finally {
       setLoading(false);
     }
@@ -202,7 +202,9 @@ const Search = () => {
     <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
       <div className="max-w-[1100px] w-full mx-auto flex flex-col gap-6">
         <h1 className="text-[20px] font-semibold text-slate-900">Поиск</h1>
-
+        {error && (
+          <Toast type="error" message={error} onClose={() => setError(null)} />
+        )}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

@@ -207,6 +207,7 @@ const SearchDetails: React.FC = () => {
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
   const [aiDossier, setAIDossier] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [dossierLoading, setDossierLoading] = useState(false);
 
   if (!user) {
@@ -278,8 +279,17 @@ const SearchDetails: React.FC = () => {
       );
 
       setAIDossier(response.data.dossier);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
+
+      if (status === 402) {
+        setError("Недостаточно средств для генерации AI-досье");
+      } else {
+        setError(detail || "Произошла ошибка");
+      }
     } finally {
       setDossierLoading(false);
     }
@@ -312,6 +322,9 @@ const SearchDetails: React.FC = () => {
           message="СКОПИРОВАНО!"
           onClose={() => setNotify(false)}
         />
+      )}
+      {error && (
+        <Toast type="error" message={error} onClose={() => setError(null)} />
       )}
 
       <div className="w-[1100px] mx-auto flex flex-col gap-6">
