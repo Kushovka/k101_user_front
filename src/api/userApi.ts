@@ -7,7 +7,7 @@ const userApi = axios.create({
 
 // подставляем access
 userApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token_user");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -29,7 +29,7 @@ userApi.interceptors.response.use(
 
     // запускаем refresh если ещё не идёт
     if (!refreshing) {
-      refreshing = refreshTokens(); // вызывает /auth/refresh
+      refreshing = refreshTokens("user"); // вызывает /auth/refresh
     }
 
     const ok = await refreshing;

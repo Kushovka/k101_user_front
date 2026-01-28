@@ -33,8 +33,8 @@ export const useUserStore = create<UserStore>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("access_token_user");
+    localStorage.removeItem("refresh_token_user");
     set({ user: null });
   },
 }));

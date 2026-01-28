@@ -18,7 +18,7 @@ interface NotifyState {
 }
 
 export default function SignIn() {
-  const isAuth = Boolean(localStorage.getItem("access_token"));
+  const isAuth = Boolean(localStorage.getItem("access_token_user"));
   if (isAuth) return <Navigate to="/account/profile" replace />;
 
   const {

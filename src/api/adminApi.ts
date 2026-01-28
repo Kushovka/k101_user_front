@@ -7,7 +7,7 @@ const adminApi = axios.create({
 
 // добавляем access в заголовок
 adminApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token_user");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -27,7 +27,7 @@ adminApi.interceptors.response.use(
     }
 
     if (!refreshing) {
-      refreshing = refreshTokens();
+      refreshing = refreshTokens("user");
     }
 
     const ok = await refreshing;

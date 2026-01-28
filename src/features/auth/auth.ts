@@ -35,8 +35,8 @@ export const login = async (
   const data = res.data;
 
   if (!data.requires_2fa) {
-    localStorage.setItem("access_token", data.access_token!);
-    localStorage.setItem("refresh_token", data.refresh_token!);
+    localStorage.setItem("access_token_user", data.access_token!);
+    localStorage.setItem("refresh_token_user", data.refresh_token!);
   } else {
     localStorage.setItem("session_id", data.session_id!);
   }
@@ -58,8 +58,8 @@ export const logout = async (): Promise<void> => {
     `${API_URL}/api/v1/auth/logout`,
     { refresh_token: refreshToken },
   );
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("access_token_user");
+  localStorage.removeItem("refresh_token_user");
 };
 
 export const verify2FA = async (
@@ -74,8 +74,9 @@ export const verify2FA = async (
   return res.data;
 };
 
-export async function refreshTokens() {
-  const refresh = localStorage.getItem("refresh_token");
+export async function refreshTokens(role: "admin" | "user") {
+  const key = role === "admin" ? "refresh_token_admin" : "refresh_token_user";
+  const refresh = localStorage.getItem(key);
   if (!refresh) return false;
 
   try {
@@ -83,8 +84,8 @@ export async function refreshTokens() {
       refresh_token: refresh,
     });
 
-    localStorage.setItem("access_token", res.data.access_token);
-    localStorage.setItem("refresh_token", res.data.refresh_token);
+    localStorage.setItem("access_token_user", res.data.access_token);
+    localStorage.setItem("refresh_token_user", res.data.refresh_token);
 
     return true;
   } catch (e) {

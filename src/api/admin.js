@@ -4,7 +4,7 @@ const ADMIN_API_URL = import.meta.env.VITE_ADMIN_API_URL;
 const USER_API_URL = import.meta.env.VITE_USER_API_URL;
 
 const getHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  Authorization: `Bearer ${localStorage.getItem("access_token_user")}`,
   Accept: "application/json",
   "Content-Type": "application/json",
 });

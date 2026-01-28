@@ -26,7 +26,7 @@ import Query from "./features/account/query/Query";
 import Verify2FA from "./features/auth/Verify2FA";
 
 const App: React.FC = () => {
-  const isAuth = Boolean(localStorage.getItem("access_token"));
+  const isAuth = Boolean(localStorage.getItem("access_token_user"));
 
   const [sessionExpired, setSessionExpired] = useState(false);
 

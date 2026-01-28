@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, fetchUser, loading } = useUserStore();
 
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token_user");
 
   useEffect(() => {
     if (token && !user) {

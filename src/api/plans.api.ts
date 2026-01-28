@@ -8,7 +8,7 @@ import type {
 } from "../types/plans.types";
 
 const getHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token_user");
   if (!token) {
     throw new Error("Access token not found");
   }

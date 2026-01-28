@@ -10,7 +10,7 @@ import userApi from "../../../api/userApi";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 
 const getHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  Authorization: `Bearer ${localStorage.getItem("access_token_user")}`,
   "Content-Type": "application/json",
 });
 

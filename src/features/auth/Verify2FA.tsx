@@ -19,8 +19,8 @@ export default function Verify2FA() {
     try {
       const tokens = await verify2FA(code, sessionId!);
 
-      localStorage.setItem("access_token", tokens.access_token);
-      localStorage.setItem("refresh_token", tokens.refresh_token);
+      localStorage.setItem("access_token_user", tokens.access_token);
+      localStorage.setItem("refresh_token_user", tokens.refresh_token);
       localStorage.removeItem("session_id");
 
       navigate("/account/profile");
