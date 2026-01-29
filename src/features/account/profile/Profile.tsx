@@ -319,7 +319,7 @@ const Profile = () => {
                     <p className="text-xs text-slate-500">Способ оплаты</p>
 
                     <div className="flex gap-2">
-                      <button
+                      {/* <button
                         type="button"
                         onClick={() => setProvider("cryptocloud")}
                         className={clsx(
@@ -343,7 +343,7 @@ const Profile = () => {
                         )}
                       >
                         BitHide
-                      </button>
+                      </button> */}
                       <button
                         type="button"
                         onClick={() => setProvider("plisio")}
