@@ -21,14 +21,13 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notify, setNotify] = useState<NotifyType | null>(null);
-  const [provider, setProvider] = useState<"cryptocloud" | "bithide">(
-    "cryptocloud",
-  );
+  const [provider, setProvider] = useState<
+    "cryptocloud" | "bithide" | "plisio"
+  >("plisio");
 
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
-
 
   const { isOpen } = useSidebar();
 
@@ -76,7 +75,6 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
 
   const handleDeposit = async () => {
     if (payInput < 100) {
@@ -345,6 +343,18 @@ const Profile = () => {
                         )}
                       >
                         BitHide
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProvider("plisio")}
+                        className={clsx(
+                          "px-3 py-2 rounded-lg border text-sm font-medium transition flex-1",
+                          provider === "plisio"
+                            ? "bg-cyan-500 text-white border-cyan-500"
+                            : "bg-white text-slate-700 border-gray-300 hover:bg-gray-100",
+                        )}
+                      >
+                        Plisio
                       </button>
                     </div>
                   </div>
