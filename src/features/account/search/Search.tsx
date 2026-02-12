@@ -69,7 +69,7 @@ const Search = () => {
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
     totalPages: number;
     setTotalPages: React.Dispatch<React.SetStateAction<number>>;
-    res: SearchResponse;
+    res: SearchResponse | null;
     setRes: React.Dispatch<React.SetStateAction<SearchResponse>>;
   };
 
@@ -109,6 +109,11 @@ const Search = () => {
     if (location.state?.restore) {
       setValue(location.state.searchValue);
       setCurrentPage(location.state.page);
+
+      if (location.state.mode) {
+        setMode(location.state.mode);
+      }
+
       handleSubmit(undefined, location.state.page, true);
     }
   }, [location.key]);
@@ -305,10 +310,10 @@ const Search = () => {
           {seeSearch && (
             <div className="text-[14px] text-slate-600">
               Найдено:{" "}
-              {res.count === 10
+              {res?.count === 10
                 ? "Очень много совпадений, уточните запрос"
-                : res.count || res.total_pages > 0
-                  ? res.total
+                : res?.count || (res?.total_pages ?? 0) > 0
+                  ? res?.total
                   : 0}
             </div>
           )}
@@ -362,6 +367,7 @@ const Search = () => {
                         item,
                         searchValue: value,
                         page: currentPage,
+                        mode,
                       },
                     })
                   }

@@ -159,6 +159,7 @@ const SearchDetails: React.FC = () => {
                 restore: true,
                 searchValue: location.state?.searchValue,
                 page: location.state?.page,
+                mode: location.state?.mode,
               },
             })
           }
