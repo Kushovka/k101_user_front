@@ -1,14 +1,32 @@
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import { useSearch } from "./SearchContext";
 
 import userApi from "../../../api/userApi";
-import Toast from "../../../components/toast/Toast";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
+
+type SearchMode =
+  | "name"
+  | "phone"
+  | "email"
+  | "address"
+  | "id"
+  | "snils"
+  | "ipn";
+
+const SEARCH_TABS: { key: SearchMode; label: string; placeholder: string }[] = [
+  { key: "name", label: "ФИО", placeholder: "Фамилия Имя Отчество" },
+  { key: "phone", label: "Телефон", placeholder: "+7 999 123-45-67" },
+  { key: "email", label: "Email", placeholder: "example@mail.ru" },
+  { key: "address", label: "Адрес", placeholder: "Город, улица, дом" },
+  { key: "snils", label: "СНИЛС", placeholder: "123-456-789 00" },
+  { key: "ipn", label: "ИНН", placeholder: "123456789000" },
+  // { key: "id", label: "ID", placeholder: "ID персоны" },
+];
 
 const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -17,12 +35,15 @@ const getHeaders = () => ({
 
 const Search = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [notify, setNotify] = useState<null | string>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [seeSearch, setSeeSearch] = useState(false);
   const [additionalOption, setAdditionalOption] = useState(false);
+  const [mode, setMode] = useState<SearchMode>("name");
+  const [value, setValue] = useState("");
 
   const { isOpen } = useSidebar();
 
@@ -79,62 +100,87 @@ const Search = () => {
 
     return "+" + phone;
   };
-
+  console.log(result);
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.restore) {
+      setValue(location.state.searchValue);
+      setCurrentPage(location.state.page);
+      handleSubmit(undefined, location.state.page, true);
+    }
+  }, [location.key]);
 
   const handleSubmit = async (
     e?: React.FormEvent,
     page: number = 1,
     isPagination: boolean = false,
-  ): Promise<void> => {
+  ) => {
     if (e) e.preventDefault();
 
-    const raw = query.trim();
-
-    if (!raw) {
-      setError("Введите запрос");
+    if (!value.trim()) {
+      setError("Введите значение для поиска");
       return;
     }
+    if (location.state?.restore && value.trim())
+      if (!isPagination) setResult([]);
 
-    const digit = raw.replace(/\D/g, "");
-    const isEmail = /\S+@\S+\.\S+/.test(raw);
-    const isPhone = digit.length >= 7;
-    const isId = /^\d+$/.test(raw) && !isEmail;
-    const isName = !isEmail && !isPhone && !isId;
+    if (!isPagination) {
+      setCurrentPage(1);
+      setTotalPages(1);
+    }
 
-    if (!isPagination) setResult([]);
     setLoading(true);
     setError(null);
     setSeeSearch(false);
 
     try {
-      const baseParams: Record<string, string> = {
+      let endpoint = "";
+
+      const params: Record<string, string> = {
         page: String(page),
         page_size: String(pageSize),
       };
 
-      let endpoint = "";
+      switch (mode) {
+        case "name":
+          endpoint = "/api/v1/search/by-name";
+          params.name = value;
+          break;
 
-      if (isName) {
-        // ---- Обычный поиск по имени ----
-        endpoint = "/api/v1/search/by-name";
-        baseParams.name = raw;
-      } else {
-        // ---- Каскадный поиск ----
-        endpoint = "/api/v1/search";
+        case "phone":
+          endpoint = "/api/v1/search";
+          params.phone = normalizePhone(value);
+          break;
 
-        if (isPhone) {
-          baseParams.phone = normalizePhone(raw);
-        } else if (isEmail) {
-          baseParams.email = raw;
-        } else if (isId) {
-          baseParams.person_id = raw;
-        }
+        case "email":
+          endpoint = "/api/v1/search";
+          params.email = value;
+          break;
+
+        case "snils":
+          endpoint = "/api/v1/search";
+          params.snils = value;
+          break;
+
+        case "ipn":
+          endpoint = "/api/v1/search";
+          params.ipn = value;
+          break;
+
+        // case "id":
+        //   endpoint = "/api/v1/search";
+        //   params.person_id = value;
+        //   break;
+
+        case "address":
+          endpoint = "/api/v1/search/by-address";
+          params.address = value;
+          break;
       }
-
-      const qs = new URLSearchParams(baseParams).toString();
+      const qs = new URLSearchParams(params).toString();
 
       const response = await userApi.post<SearchResponse>(
         `${endpoint}?${qs}`,
@@ -143,38 +189,26 @@ const Search = () => {
       );
 
       setSeeSearch(true);
+      setRes(response.data);
 
       if ("entity" in response.data) {
-        setRes(response.data);
-
-        // если ничего не найдено — показываем пусто
-        if (response.data.total_records_found === 0) {
-          setResult([]);
-        } else {
-          setResult([response.data.entity as any]);
-        }
-
-        setTotalPages(response.data.total_pages ?? 1);
-        setCurrentPage(page);
-        return;
+        setResult(
+          response.data.total_records_found === 0
+            ? []
+            : [response.data.entity as any],
+        );
+      } else {
+        setResult(response.data.results ?? []);
       }
 
-      console.log(response.data);
-      setRes(response.data);
-      setResult(response.data.results ?? []);
       setTotalPages(response.data.total_pages ?? 1);
       setCurrentPage(page);
     } catch (err: any) {
-      console.error(err);
-
-      const status = err.response?.status;
-      const detail = err.response?.data?.detail;
-
-      if (status === 402) {
-        setError("Недостаточно средств");
-      } else {
-        setError(detail || "Произошла ошибка");
-      }
+      setError(
+        err?.response?.status === 500
+          ? "Сервер временно недоступен"
+          : "Ошибка поиска",
+      );
     } finally {
       setLoading(false);
     }
@@ -202,41 +236,67 @@ const Search = () => {
     <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
       <div className="max-w-[1100px] w-full mx-auto flex flex-col gap-6">
         <h1 className="text-[20px] font-semibold text-slate-900">Поиск</h1>
-        {error && (
-          <Toast type="error" message={error} onClose={() => setError(null)} />
-        )}
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
           className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 flex flex-col gap-5"
         >
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-center gap-3 w-full"
-          >
-            <div className="relative flex-1">
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="ФИО, email, телефон или ID"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-[42px] pl-10 pr-3 border border-gray-300 rounded-lg 
-                       focus:outline-none focus:ring-2 focus:ring-cyan transition-all"
-              />
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                🔍
-              </span>
-            </div>
+          <div className="flex gap-2">
+            {SEARCH_TABS.map((tab) => {
+              const isDisabled = false;
+
+              return (
+                <button
+                  key={tab.key}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled) return;
+
+                    setMode(tab.key);
+                    setValue("");
+                    setResult([]);
+                    setSeeSearch(false);
+                  }}
+                  className={clsx(
+                    "px-4 py-2 rounded-lg text-[14px] transition",
+                    isDisabled
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : mode === tab.key
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={SEARCH_TABS.find((t) => t.key === mode)?.placeholder}
+              className="flex-1 h-[42px] px-4 border border-gray-300 rounded-lg
+               focus:outline-none focus:ring-2 focus:ring-cyan"
+            />
 
             <button
-              className="px-5 h-[42px] bg-cyan-500 text-white rounded-lg text-[14px]
-                     hover:bg-cyan-600 active:bg-cyan-600 transition"
+              className="px-6 h-[42px] bg-cyan-500 text-white rounded-lg
+               hover:bg-cyan-600 transition"
             >
               Найти
             </button>
           </form>
+
+          {/* {mode === "address" && (
+            <p className="text-xs text-slate-500">
+              Пример: Москва, ул. Ильинка, д. 23/16
+            </p>
+          )} */}
 
           <p className="text-[13px] text-slate-500">
             Система автоматически определит тип данных
@@ -248,7 +308,7 @@ const Search = () => {
               {res.count === 10
                 ? "Очень много совпадений, уточните запрос"
                 : res.count || res.total_pages > 0
-                  ? res.total_pages
+                  ? res.total
                   : 0}
             </div>
           )}
@@ -289,17 +349,20 @@ const Search = () => {
                 <span className="text-center">{item.first_name || "-"}</span>
                 <span className="text-center">{item.middle_name || "-"}</span>
                 <span className="text-center truncate">
-                  {item.emails?.[0] ?? item.email ?? "-"}
+                  {item.emails?.[0] ?? "-"}
                 </span>
-                <span className="text-center">
-                  {item.phones?.[0] ?? item.phone ?? "-"}
-                </span>
+
+                <span className="text-center">{item.phones?.[0] ?? "-"}</span>
 
                 <span
                   className="text-cyan-600 font-medium text-center"
                   onClick={() =>
                     navigate(`/account/search/${item.entity_id}`, {
-                      state: item,
+                      state: {
+                        item,
+                        searchValue: value,
+                        page: currentPage,
+                      },
                     })
                   }
                 >
@@ -310,7 +373,7 @@ const Search = () => {
           </div>
 
           {/* pagination */}
-          {totalPages > 1 && (
+          {!loading && result.length > 0 && totalPages > 1 && (
             <div className="flex items-center justify-center gap-1 pt-4">
               {visiblePages.map((page) => (
                 <button

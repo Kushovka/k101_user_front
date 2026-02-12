@@ -7,14 +7,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import userApi from "../../../api/userApi";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
-import type { SearchUser } from "../../../types/searchDetails.types";
-
-/* semantic helpers */
-const isLatLon = (v: any) => {
-  if (typeof v !== "string" && typeof v !== "number") return false;
-  const n = parseFloat(String(v).replace(",", "."));
-  return !isNaN(n) && n >= -180 && n <= 180;
-};
+import type {
+  SearchUser,
+  SourceFile,
+} from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -57,133 +53,12 @@ const fieldLabels: Record<string, string> = {
   "user agent": "Устройство пользователя",
 };
 
-const semanticGroups = {
-  contacts: ["phones", "emails", "rfcont", "rfcont_name"],
-  personal: [
-    "грудь",
-    "breast",
-    "размер одежды",
-    "clothing size",
-    "рост",
-    "height",
-    "девушка",
-    "nickname",
-    "вес",
-    "weight",
-    "размер обуви",
-    "shoes size",
-    "номер анкеты",
-    "anketa_id",
-    "район",
-    "area",
-    "метро",
-    "metro",
-    "дата обновления",
-    "updated ",
-  ],
-  docs: ["passport", "паспорт", "serial", "number", "snils"],
-  work: [
-    "fb",
-    "facebook",
-    "fb_profile_id",
-    "fb_work",
-    "external_share_link",
-    "pic_max",
-    "дата резюме",
-    "зарплата",
-    "образование",
-    "профессия",
-  ],
-  transport: [
-    "gibdd",
-    "gibdd2",
-    "car",
-    "vin",
-    "plate",
-    "год вып",
-    "кпп",
-    "Кол-во хозяев по ПТС",
-    "модель",
-    "модификация",
-    "наличие / таможня",
-    "номер владельца",
-    "обмен",
-    "привод",
-    "пробег",
-    "руль",
-    "состояние",
-    "тип кузова/цвет",
-    "цена",
-    "кол-во хозяев по птс",
-  ],
-  delivery: [
-    "delivery",
-    "delivery2",
-    "yandex",
-    "comment",
-    "commission",
-    "currency code",
-    "date added",
-    "ip",
-    "order id",
-    "order status id",
-    "password",
-    "payment code",
-    "payment country",
-    "payment method",
-    "payment postcode",
-    "payment zone",
-    "shipping address 1",
-    "shipping city",
-    "shipping country",
-    "shipping method",
-    "status",
-    "user agent",
-    "accept language",
-  ],
-  marketplace: ["avito", "wildberries", "wb"],
-  geo: ["lat", "lon", "широта", "долгота"],
-  security: ["password", "checkword", "external_auth_id", "login"],
-  crm: [
-    "lid",
-    "crm",
-    "активность",
-    "активные сделки",
-    "должности контактных лиц",
-    "должность",
-    "избранное",
-    "информация о контактных лицах",
-    "количество активных коммуникаций",
-    "количество завершенных сделок",
-    "количество коммуникаций",
-    "количество неоплаченных счетов",
-    "количество сделок",
-    "количество счетов",
-    "компания",
-    "непрочитанные комментарии",
-    "плательщики",
-    "создана",
-    "сумма активных сделок",
-    "сумма всех сделок",
-    "сумма всех счетов",
-    "сумма завершенных сделок",
-    "сумма неоплаченных счетов",
-    "счетчик дел",
-    "тип",
-  ],
+type SearchDetailsState = {
+  item: SearchUser;
+  searchValue?: string;
+  page?: number;
 };
 
-const prefixLabels: Record<string, string> = {
-  delivery: "Доставка",
-  delivery2: "Доставка (вторичная)",
-  yandex: "Доставка Яндекс",
-  avito: "Маркетплейсы (Avito)",
-  wildberries: "Маркетплейсы (Wildberries)",
-  beeline: "Сотовая связь (Beeline)",
-  fb: "Работа/Соцсети (Facebook)",
-  gibdd: "Транспорт (ГИБДД)",
-  rfcont: "Контакты (RF)",
-};
 const getHeaders = (): Record<string, string> => {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -201,14 +76,37 @@ const SearchDetails: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen } = useSidebar();
 
-  const user = location.state as SearchUser | null;
-
   const [notify, setNotify] = useState(false);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
   const [aiDossier, setAIDossier] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [dossierLoading, setDossierLoading] = useState(false);
+
+  /* ---------------- helpers ---------------- */
+  const state = location.state as SearchDetailsState | null;
+  const user = state?.item ?? null;
+
+  const groupedSources = user?.grouped_sources ?? [];
+
+  const sortGroups = (a: { group_name: string }, b: { group_name: string }) => {
+    if (a.group_name === "other") return 1;
+    if (b.group_name === "other") return -1;
+    return 0;
+  };
+
+  const getSourceLabel = (sources: SourceFile[]) => {
+    if (!sources.length) return null;
+
+    if (sources.length === 1) {
+      return (
+        sources[0].display_name ||
+        sources[0].file_name ||
+        sources[0].raw_file_id
+      );
+    }
+
+    return `${sources.length} источника`;
+  };
 
   if (!user) {
     return (
@@ -218,50 +116,7 @@ const SearchDetails: React.FC = () => {
     );
   }
 
-  const cascade = user.additional_data ?? {};
-
-  const buckets = {
-    contacts: {},
-    personal: {},
-    docs: {},
-    work: {},
-    transport: {},
-    delivery: {},
-    marketplace: {},
-    geo: {},
-    security: {},
-    crm: {},
-    misc: {},
-  } as Record<string, Record<string, any>>;
-
-  Object.entries(cascade).forEach(([key, raw]) => {
-    const value = raw?.value ?? raw;
-    const prefix = key.split("_")[0].toLowerCase();
-    const normalizedKey = key.toLowerCase();
-
-    let target = "misc";
-
-    for (const [bucket, patterns] of Object.entries(semanticGroups)) {
-      if (
-        patterns.some((p) => normalizedKey.includes(p) || prefix.includes(p))
-      ) {
-        target = bucket;
-        break;
-      }
-    }
-
-    if (target === "misc") {
-      if (
-        isLatLon(value) ||
-        normalizedKey.includes("lat") ||
-        normalizedKey.includes("lon")
-      ) {
-        target = "misc";
-      }
-    }
-
-    buckets[target][key] = value;
-  });
+  const sourceFiles = user.source_files ?? [];
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -279,40 +134,16 @@ const SearchDetails: React.FC = () => {
       );
 
       setAIDossier(response.data.dossier);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-
-      const status = err.response?.status;
-      const detail = err.response?.data?.detail;
-
-      if (status === 402) {
-        setError("Недостаточно средств для генерации AI-досье");
-      } else {
-        setError(detail || "Произошла ошибка");
-      }
     } finally {
       setDossierLoading(false);
     }
   };
 
-  // const isValidName = (val: string) => /^[a-zA-Zа-яА-ЯёЁ-]+$/.test(val);
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
-  const titleMap = {
-    contacts: "Контакты",
-    personal: "Личная информация",
-    docs: "Документы",
-    work: "Работа / Соц сети",
-    transport: "Транспорт",
-    marketplace: "Маркетплейсы",
-    delivery: "Доставка",
-    geo: "Гео",
-    security: "Безопасность",
-    crm: "Бизнес / CRM",
-    misc: "Прочее",
-  };
-
-  const personId = user.person_id;
+  const personId = user.entity_id;
 
   return (
     <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
@@ -323,9 +154,6 @@ const SearchDetails: React.FC = () => {
           onClose={() => setNotify(false)}
         />
       )}
-      {error && (
-        <Toast type="error" message={error} onClose={() => setError(null)} />
-      )}
 
       <div className="w-[1100px] mx-auto flex flex-col gap-6">
         {/* title */}
@@ -335,7 +163,15 @@ const SearchDetails: React.FC = () => {
 
         {/* back button */}
         <button
-          onClick={() => navigate("/account/search")}
+          onClick={() =>
+            navigate("/account/search", {
+              state: {
+                restore: true,
+                searchValue: location.state?.searchValue,
+                page: location.state?.page,
+              },
+            })
+          }
           className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
         >
           <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
@@ -346,11 +182,11 @@ const SearchDetails: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden select-none"
+          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
         >
           <div
             onClick={() => setOpenMain(!openMain)}
-            className="flex justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
+            className="flex justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition  select-none"
           >
             <div className="font-medium text-slate-800">
               Основная информация
@@ -396,7 +232,10 @@ const SearchDetails: React.FC = () => {
               )}
               {user.snils?.[0] && <p>СНИЛС: {user.snils[0]}</p>}
               {user.age && <p>Возраст: {user.age}</p>}
-              {user.gender && <p>Пол: {user.gender}</p>}
+              {user.gender && (
+                <p>Пол: {user.gender === "male" ? "Мужской" : "Женский"}</p>
+              )}
+              {user.birthdays?.[0] && <p>Дата рождения: {user.birthdays[0]}</p>}
               {user.emails?.map((e, i) => (
                 <p key={i}>
                   Email {i + 1}:{" "}
@@ -410,12 +249,15 @@ const SearchDetails: React.FC = () => {
               ))}
 
               {user.cities?.[0] && <p>Город: {user.cities[0]}</p>}
+              {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
 
               {user.addresses?.map((a, i) => (
                 <p key={i}>
                   Адрес {i + 1}: {a}
                 </p>
               ))}
+
+              {/* {user.entity_id && <p>ID: {user.entity_id}</p>} */}
             </div>
           )}
         </motion.div>
@@ -425,11 +267,11 @@ const SearchDetails: React.FC = () => {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden select-none"
+          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
         >
           <div
             onClick={() => setOpenDossier(!openDossier)}
-            className="flex justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
+            className="flex justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition select-none"
           >
             <div className="font-medium text-slate-800">Полное досье</div>
             <IoIosArrowDown
@@ -442,38 +284,66 @@ const SearchDetails: React.FC = () => {
 
           {openDossier && (
             <div className="px-4 py-4 border-t border-gray-200 space-y-6">
-              {Object.entries(buckets).map(([bucket, data]) => {
-                if (Object.keys(data).length === 0) return null;
+              {groupedSources
+                .slice()
+                .sort(sortGroups)
+                .map((group) => {
+                  if (!group.sources?.length) return null;
 
-                return (
-                  <div key={bucket} className="space-y-2">
-                    <div className="font-medium text-slate-800">
-                      {titleMap[bucket as keyof typeof titleMap]}
-                    </div>
+                  return (
+                    <div key={group.group_name} className="space-y-4">
+                      {/* Заголовок группы */}
+                      <div className="font-medium text-slate-800">
+                        {group.group_name === "other"
+                          ? "Другие источники"
+                          : `${group.group_name}`}
+                      </div>
 
-                    <div className="flex flex-col gap-1 text-[14px]">
-                      {Object.entries(data).map(([field, val]) => {
-                        const keyNormalized = field.toLowerCase();
-                        const label = fieldLabels[keyNormalized] ?? field;
+                      {/* Источники внутри группы */}
+                      {group.sources.map((source) => {
+                        const sourceName =
+                          source.display_name || source.raw_file_id;
 
                         return (
                           <div
-                            key={field}
-                            className="flex gap-2 text-slate-700"
+                            key={source.raw_file_id}
+                            className="border border-gray-200 rounded-lg p-3 space-y-2"
                           >
-                            <span className="min-w-[180px] text-slate-500">
-                              {label}:
-                            </span>
-                            <span className="text-slate-800">
-                              {String(val)}
-                            </span>
+                            {/* Источник */}
+                            <div className="text-xs text-slate-500">
+                              Источник: {sourceName}
+                            </div>
+
+                            {/* Поля источника */}
+                            <div className="flex flex-col gap-1 text-[14px]">
+                              {Object.entries(source.fields).map(
+                                ([fieldKey, fieldValue]) => {
+                                  const label =
+                                    fieldLabels[fieldKey.toLowerCase()] ??
+                                    fieldKey;
+
+                                  return (
+                                    <div
+                                      key={fieldKey}
+                                      className="flex gap-2 text-slate-700"
+                                    >
+                                      <span className="min-w-[180px] text-slate-500">
+                                        {label}:
+                                      </span>
+                                      <span className="text-slate-800 break-all">
+                                        {String(fieldValue)}
+                                      </span>
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           )}
         </motion.div>
@@ -483,9 +353,9 @@ const SearchDetails: React.FC = () => {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden select-none"
+          className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
         >
-          <div className="bg-white p-4 flex justify-between items-center">
+          <div className="bg-white p-4 flex justify-between items-center select-none">
             <div className="text-[15px] font-medium text-slate-800">
               AI-Досье
             </div>
@@ -514,6 +384,42 @@ const SearchDetails: React.FC = () => {
             </motion.div>
           )}
         </motion.div>
+
+        {/* SOURCE FILES */}
+        {sourceFiles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+          >
+            <div className="px-4 py-3 border-b border-gray-200">
+              <div className="font-medium text-slate-800">Источники данных</div>
+            </div>
+
+            <div className="px-4 py-3 space-y-2 text-[14px]">
+              {sourceFiles.map((file) => {
+                const name =
+                  file.display_name && file.display_name !== "unknown"
+                    ? file.display_name
+                    : file.file_name;
+
+                return (
+                  <div
+                    key={file.raw_file_id}
+                    className="flex justify-between items-center text-slate-700"
+                  >
+                    <span>{name || "Неизвестный файл"}</span>
+
+                    <span className="text-xs text-slate-400">
+                      {file.raw_file_id}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
