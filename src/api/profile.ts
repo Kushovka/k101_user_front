@@ -30,3 +30,9 @@ export const updateProfile = async (
   return data;
 };
 
+export const getMyComplaints = async () => {
+  const { data } = await userApi.get("/api/v1/complaints/my", {
+    headers: getHeaders(),
+  });
+  return data;
+};

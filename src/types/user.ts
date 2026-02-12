@@ -98,3 +98,4 @@ export interface ApiTelegramUser {
 export interface TelegramUsersResponse {
   requests: ApiTelegramUser[];
 }
+

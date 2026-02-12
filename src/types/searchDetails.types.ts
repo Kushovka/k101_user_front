@@ -28,6 +28,7 @@ export interface SourceFile {
   display_name: string | null;
   file_description: string | null;
   upload_date: string | null;
+  doc_id: string;
 }
 
 export interface SearchUser {
@@ -64,5 +65,6 @@ export type SourceWithFields = {
   raw_file_id: string;
   display_name?: string;
   upload_date?: string | null;
+  doc_id: string;
   fields: Record<string, unknown>;
 };

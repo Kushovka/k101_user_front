@@ -5,12 +5,11 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
 import userApi from "../../../api/userApi";
+import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
+import { FieldWithComplaint } from "../../../components/field-complaint/FieldWithComplaint";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
-import type {
-  SearchUser,
-  SourceFile,
-} from "../../../types/searchDetails.types";
+import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -82,6 +81,11 @@ const SearchDetails: React.FC = () => {
   const [aiDossier, setAIDossier] = useState("");
   const [dossierLoading, setDossierLoading] = useState(false);
 
+  const [complaintTarget, setComplaintTarget] = useState<{
+    docId: string;
+    fieldName: string;
+  } | null>(null);
+
   /* ---------------- helpers ---------------- */
   const state = location.state as SearchDetailsState | null;
   const user = state?.item ?? null;
@@ -92,20 +96,6 @@ const SearchDetails: React.FC = () => {
     if (a.group_name === "other") return 1;
     if (b.group_name === "other") return -1;
     return 0;
-  };
-
-  const getSourceLabel = (sources: SourceFile[]) => {
-    if (!sources.length) return null;
-
-    if (sources.length === 1) {
-      return (
-        sources[0].display_name ||
-        sources[0].file_name ||
-        sources[0].raw_file_id
-      );
-    }
-
-    return `${sources.length} источника`;
   };
 
   if (!user) {
@@ -300,13 +290,13 @@ const SearchDetails: React.FC = () => {
                       </div>
 
                       {/* Источники внутри группы */}
-                      {group.sources.map((source) => {
+                      {group.sources.map((source, index) => {
                         const sourceName =
                           source.display_name || source.raw_file_id;
 
                         return (
                           <div
-                            key={source.raw_file_id}
+                            key={`${source.raw_file_id}-${index}`}
                             className="border border-gray-200 rounded-lg p-3 space-y-2"
                           >
                             {/* Источник */}
@@ -317,23 +307,22 @@ const SearchDetails: React.FC = () => {
                             {/* Поля источника */}
                             <div className="flex flex-col gap-1 text-[14px]">
                               {Object.entries(source.fields).map(
-                                ([fieldKey, fieldValue]) => {
+                                ([fieldKey, fieldValue], fieldIndex) => {
                                   const label =
                                     fieldLabels[fieldKey.toLowerCase()] ??
                                     fieldKey;
 
                                   return (
-                                    <div
-                                      key={fieldKey}
-                                      className="flex gap-2 text-slate-700"
-                                    >
-                                      <span className="min-w-[180px] text-slate-500">
-                                        {label}:
-                                      </span>
-                                      <span className="text-slate-800 break-all">
-                                        {String(fieldValue)}
-                                      </span>
-                                    </div>
+                                    <FieldWithComplaint
+                                      key={`${source.doc_id}-${fieldKey}-${fieldIndex}`}
+                                      label={label}
+                                      value={fieldValue}
+                                      fieldName={fieldKey}
+                                      docId={source.doc_id}
+                                      onComplaint={(docId, fieldName) =>
+                                        setComplaintTarget({ docId, fieldName })
+                                      }
+                                    />
                                   );
                                 },
                               )}
@@ -398,7 +387,7 @@ const SearchDetails: React.FC = () => {
             </div>
 
             <div className="px-4 py-3 space-y-2 text-[14px]">
-              {sourceFiles.map((file) => {
+              {sourceFiles.map((file, i) => {
                 const name =
                   file.display_name && file.display_name !== "unknown"
                     ? file.display_name
@@ -406,7 +395,7 @@ const SearchDetails: React.FC = () => {
 
                 return (
                   <div
-                    key={file.raw_file_id}
+                    key={`${file.raw_file_id}-${i}`}
                     className="flex justify-between items-center text-slate-700"
                   >
                     <span>{name || "Неизвестный файл"}</span>
@@ -421,6 +410,13 @@ const SearchDetails: React.FC = () => {
           </motion.div>
         )}
       </div>
+      {complaintTarget && (
+        <ComplaintModal
+          docId={complaintTarget.docId}
+          fieldName={complaintTarget.fieldName}
+          onClose={() => setComplaintTarget(null)}
+        />
+      )}
     </section>
   );
 };
