@@ -5,23 +5,22 @@ import Toast from "../toast/Toast";
 
 type ComplaintModalProps = {
   docId: string;
-  fieldName: string;
+  fields: string[];
   onClose: () => void;
-  onSent?: () => void;
 };
 
 export function ComplaintModal({
   docId,
-  fieldName,
+  fields,
   onClose,
-  onSent,
 }: ComplaintModalProps) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [notify, setNotify] = useState("");
+  const [selectedField, setSelectedField] = useState("");
 
-  const canSend = message.trim().length >= 5 && !loading;
+  const canSend = message.trim().length >= 5 && selectedField && !loading;
 
   const handleSend = async () => {
     try {
@@ -32,18 +31,17 @@ export function ComplaintModal({
 
       await createComplaint({
         doc_id: docId,
-        field_name: fieldName,
+        field_name: selectedField,
         message: message.trim(),
       });
       setNotify("accessComplaint");
 
       setTimeout(() => {
-        onSent?.();
         onClose();
       }, 1500);
       console.log({
         doc_id: docId,
-        field_name: fieldName,
+        field_name: selectedField,
         message,
       });
     } catch (error) {
@@ -81,10 +79,6 @@ export function ComplaintModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">Жалоба на данные</h2>
-            <p className="text-sm text-zinc-500">
-              Поле:{" "}
-              <span className="font-medium text-zinc-700">{fieldName}</span>
-            </p>
           </div>
 
           <button
@@ -96,6 +90,19 @@ export function ComplaintModal({
             ✕
           </button>
         </div>
+
+        <select
+          value={selectedField}
+          onChange={(e) => setSelectedField(e.target.value)}
+          className="border border-zinc-200 rounded-xl p-2 text-sm"
+        >
+          <option value="">Выберите поле</option>
+          {fields.map((field) => (
+            <option key={field} value={field}>
+              {field}
+            </option>
+          ))}
+        </select>
 
         <textarea
           className="min-h-[120px] w-full resize-none rounded-xl border border-zinc-200 p-3 text-sm outline-none focus:border-zinc-400"

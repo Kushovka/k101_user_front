@@ -6,7 +6,6 @@ import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
 import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
-import { FieldWithComplaint } from "../../../components/field-complaint/FieldWithComplaint";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import type { SearchUser } from "../../../types/searchDetails.types";
@@ -83,7 +82,7 @@ const SearchDetails: React.FC = () => {
 
   const [complaintTarget, setComplaintTarget] = useState<{
     docId: string;
-    fieldName: string;
+    fields: string[];
   } | null>(null);
 
   /* ---------------- helpers ---------------- */
@@ -298,14 +297,28 @@ const SearchDetails: React.FC = () => {
                         return (
                           <div
                             key={`${source.raw_file_id}-${index}`}
-                            className="border border-gray-200 rounded-lg p-3 space-y-2"
+                            className="border border-gray-200 rounded-lg p-3 space-y-3"
                           >
-                            {/* Источник */}
-                            <div className="text-xs text-slate-500">
-                              Источник: {sourceName}
+                            {/* Верхняя строка */}
+                            <div className="flex justify-between items-center">
+                              <div className="text-xs text-slate-500">
+                                Источник: {sourceName}
+                              </div>
+
+                              <button
+                                onClick={() =>
+                                  setComplaintTarget({
+                                    docId: source.doc_id,
+                                    fields: Object.keys(source.fields),
+                                  })
+                                }
+                                className="text-xs px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md transition"
+                              >
+                                Пожаловаться
+                              </button>
                             </div>
 
-                            {/* Поля источника */}
+                            {/* Поля */}
                             <div className="flex flex-col gap-1 text-[14px]">
                               {Object.entries(source.fields).map(
                                 ([fieldKey, fieldValue], fieldIndex) => {
@@ -314,16 +327,15 @@ const SearchDetails: React.FC = () => {
                                     fieldKey;
 
                                   return (
-                                    <FieldWithComplaint
+                                    <div
                                       key={`${source.doc_id}-${fieldKey}-${fieldIndex}`}
-                                      label={label}
-                                      value={fieldValue}
-                                      fieldName={fieldKey}
-                                      docId={source.doc_id}
-                                      onComplaint={(docId, fieldName) =>
-                                        setComplaintTarget({ docId, fieldName })
-                                      }
-                                    />
+                                      className="flex gap-2"
+                                    >
+                                      <span className="text-slate-500">
+                                        {label}:
+                                      </span>
+                                      <span>{String(fieldValue)}</span>
+                                    </div>
                                   );
                                 },
                               )}
@@ -414,7 +426,7 @@ const SearchDetails: React.FC = () => {
       {complaintTarget && (
         <ComplaintModal
           docId={complaintTarget.docId}
-          fieldName={complaintTarget.fieldName}
+          fields={complaintTarget.fields}
           onClose={() => setComplaintTarget(null)}
         />
       )}
