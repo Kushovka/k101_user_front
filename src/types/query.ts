@@ -1,13 +1,15 @@
-export type QueryItem = {
+export interface SnapshotItem {
   id: number;
-  request_cost: string;
   request_type: string;
-  status: string;
+  search_query: string;
+  results_count: number;
   request_date: string;
-};
+}
 
-export type QueryResponse = {
-  requests: QueryItem[];
-  total_pages: number;
+export interface SnapshotResponse {
   total: number;
-};
+  snapshots: SnapshotItem[];
+  page: number;
+  page_size: number;
+  total_pages: number;
+}

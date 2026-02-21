@@ -3,12 +3,14 @@ import clsx from "clsx";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 
-import { getQuery } from "../../../api/query";
 import Toast from "../../../components/toast/Toast";
-import { QueryItem, QueryResponse } from "../../../types/query";
+import { SnapshotItem, SnapshotResponse } from "../../../types/query";
+import { getSnapshotId, getSnapshots } from "../../../api/query";
+import { useNavigate } from "react-router-dom";
 
 const Query: React.FC = () => {
-  const [data, setData] = useState<QueryItem[]>([]);
+  const navigate = useNavigate();
+  const [data, setData] = useState<SnapshotItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,10 +26,10 @@ const Query: React.FC = () => {
     setError(null);
 
     try {
-      const response: QueryResponse = await getQuery(page, pageSize);
+      const response: SnapshotResponse = await getSnapshots(page, pageSize);
       console.log("API:", response);
 
-      setData(response.requests);
+      setData(response.snapshots);
       setTotalPages(response.total_pages);
       setTotal(response.total);
     } catch (err: any) {
@@ -47,6 +49,26 @@ const Query: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const openSnapshot = async (snapshotId: number) => {
+    try {
+      setLoading(true);
+
+      const response = await getSnapshotId(snapshotId);
+
+      navigate("/account/snapshot-details", {
+        state: {
+          snapshot: response,
+        },
+      });
+    } catch (err) {
+      setError("Не удалось загрузить snapshot");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(data);
 
   useEffect(() => {
     fetchHistory(currentPage);
@@ -113,6 +135,7 @@ const Query: React.FC = () => {
               {data.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => openSnapshot(item.id)}
                   className="grid grid-cols-5 text-sm text-slate-700 py-3 items-center text-center hover:bg-slate-50 transition"
                 >
                   {/* ID */}
@@ -122,25 +145,6 @@ const Query: React.FC = () => {
 
                   {/* TYPE */}
                   <span className="text-slate-700">{item.request_type}</span>
-
-                  {/* COST */}
-                  <span className="text-slate-800 font-medium">
-                    {item.request_cost}
-                  </span>
-
-                  {/* STATUS */}
-                  <span
-                    className={clsx(
-                      "px-2 py-[3px] rounded-md text-xs mx-auto font-medium",
-                      item.status === "success"
-                        ? "bg-green-100 text-green-700"
-                        : item.status === "failed"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700",
-                    )}
-                  >
-                    {item.status}
-                  </span>
 
                   {/* DATE */}
                   <span className="text-slate-600 text-xs">

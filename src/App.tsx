@@ -25,6 +25,7 @@ import SearchDetails from "./features/account/search/SearchDetails";
 import Register from "./features/auth/Register";
 import Verify2FA from "./features/auth/Verify2FA";
 import { useBankIdleLogout } from "./hooks/logout/useBankIdleLogout";
+import SnapshotDetail from "./components/snapshot_detail/SnapshotDetail";
 
 const App: React.FC = () => {
   const isAuth = Boolean(localStorage.getItem("access_token"));
@@ -96,7 +97,10 @@ const App: React.FC = () => {
           }
         >
           <Route path="profile" element={<Profile />} />
-          <Route path="query" element={<Query />} />
+          <Route>
+            <Route path="query" element={<Query />} />
+            <Route path="snapshot-details" element={<SnapshotDetail />} />
+          </Route>
 
           <Route path="plans" element={<Plans />} />
 

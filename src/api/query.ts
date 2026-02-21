@@ -1,18 +1,13 @@
 import userApi from "./userApi";
 
-// query
-export const getQuery = async (page = 1, pageSize = 10) => {
-  const token = localStorage.getItem("access_token");
-  if (!token) throw new Error("Нет токена");
-  const res = await userApi.get(
-    `/api/v1/users/requests?page=${page}&page_size=${pageSize}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    },
-  );
-  console.log(res);
+export const getSnapshots = async (page = 1, pageSize = 10) => {
+  const res = await userApi.get("/api/v1/users/snapshots", {
+    params: { page, page_size: pageSize },
+  });
+  return res.data;
+};
+
+export const getSnapshotId = async (snapshot_id: number) => {
+  const res = await userApi.get(`/api/v1/users/snapshots/${snapshot_id}`);
   return res.data;
 };
