@@ -1,12 +1,12 @@
-import { useEffect, useState, useMemo } from "react";
 import clsx from "clsx";
+import { useEffect, useMemo, useState } from "react";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 
+import { useNavigate } from "react-router-dom";
+import { getSnapshotId, getSnapshots } from "../../../api/query";
 import Toast from "../../../components/toast/Toast";
 import { SnapshotItem, SnapshotResponse } from "../../../types/query";
-import { getSnapshotId, getSnapshots } from "../../../api/query";
-import { useNavigate } from "react-router-dom";
 
 const Query: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const Query: React.FC = () => {
 
     try {
       const response: SnapshotResponse = await getSnapshots(page, pageSize);
-      console.log("API:", response);
+
 
       setData(response.snapshots);
       setTotalPages(response.total_pages);
@@ -68,7 +68,7 @@ const Query: React.FC = () => {
     }
   };
 
-  console.log(data);
+
 
   useEffect(() => {
     fetchHistory(currentPage);

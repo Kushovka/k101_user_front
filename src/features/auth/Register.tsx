@@ -49,7 +49,7 @@ export default function Register() {
 
       setTimeout(() => navigate("/sign-in"), 800);
     } catch (err: any) {
-      console.log(err?.response?.data);
+
       setNotify({
         type: "error",
         message: "Ошибка регистрации",

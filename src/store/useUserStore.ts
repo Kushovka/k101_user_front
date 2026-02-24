@@ -22,8 +22,7 @@ export const useUserStore = create<UserStore>((set) => ({
     try {
       const data = await getCurrentUser(); // ожидается User
       set({ user: data });
-      console.log(data);
-      console.log("current user:", data);
+
     } catch (err) {
       console.error("fetchUser error:", err);
       // можно дополнительно: set({ user: null })

@@ -24,7 +24,7 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useUserStore();
-  console.log(user);
+
 
   const { isOpen, setIsOpen } = useSidebar();
 
