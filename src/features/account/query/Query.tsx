@@ -116,7 +116,7 @@ const Query: React.FC = () => {
 
           {/* STATS */}
           <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>Всего запросов: {total}</span>
+            <span>Всего Всего запросов: {total}</span>
           </div>
 
           {/* TABLE CONTAINER */}
