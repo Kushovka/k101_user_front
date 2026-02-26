@@ -14,6 +14,7 @@
     "@anthropic-ai/claude-code": "^2.0.59",
     "@aws-sdk/client-s3": "^3.943.0",
     "@aws-sdk/lib-storage": "^3.943.0",
+    "@tailwindcss/typography": "^0.5.19",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "event-source-polyfill": "^1.0.31",
@@ -23,6 +24,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.66.1",
     "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
     "react-tooltip": "^5.30.0",
     "zustand": "^5.0.10"

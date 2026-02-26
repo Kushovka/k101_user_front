@@ -84,7 +84,7 @@ const Profile = () => {
       setNotify("access_save");
       setTimeout(() => setNotify(null), 3000);
     } catch (err) {
-      console.log(err);
+
       setNotify("error_save");
       setTimeout(() => setNotify(null), 3000);
     } finally {
@@ -121,7 +121,7 @@ const Profile = () => {
       try {
         const res = await getMyComplaints();
         setMyComplaints(res.items);
-        console.log(res.items);
+
       } catch (err) {}
     };
     handleComplaints();

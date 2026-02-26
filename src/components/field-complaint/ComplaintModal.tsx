@@ -39,11 +39,7 @@ export function ComplaintModal({
       setTimeout(() => {
         onClose();
       }, 1500);
-      console.log({
-        doc_id: docId,
-        field_name: selectedField,
-        message,
-      });
+     
     } catch (error) {
       console.error(error);
       setNotify("errorComplaint");

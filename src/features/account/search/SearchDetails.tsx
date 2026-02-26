@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import React, { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
+import ReactMarkdown from "react-markdown";
 import { useLocation, useNavigate } from "react-router-dom";
 import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
@@ -78,6 +79,7 @@ const SearchDetails: React.FC = () => {
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
   const [aiDossier, setAIDossier] = useState("");
+  const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [dossierLoading, setDossierLoading] = useState(false);
 
   const [complaintTarget, setComplaintTarget] = useState<{
@@ -123,6 +125,7 @@ const SearchDetails: React.FC = () => {
       );
 
       setAIDossier(response.data.dossier);
+      setGenerationTime(response.data.generation_time);
     } catch (err) {
       console.error(err);
     } finally {
@@ -361,6 +364,11 @@ const SearchDetails: React.FC = () => {
             <div className="text-[15px] font-medium text-slate-800">
               AI-Досье
             </div>
+            {generationTime && (
+              <div className="text-xs text-slate-500">
+                Сгенерировано за {generationTime.toFixed(2)} мс
+              </div>
+            )}
 
             <button
               disabled={dossierLoading}
@@ -382,7 +390,9 @@ const SearchDetails: React.FC = () => {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {aiDossier}
+              <div className="prose prose-slate max-w-none">
+                <ReactMarkdown>{aiDossier}</ReactMarkdown>
+              </div>
             </motion.div>
           )}
         </motion.div>

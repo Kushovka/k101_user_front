@@ -27,6 +27,6 @@ export const getCurrentUser = async (): Promise<ApiUser> => {
   const { data } = await userApi.get<ApiUser>(`/api/v1/users/profile`, {
     headers: getHeaders(),
   });
-  console.log(data);
+
   return data;
 };
