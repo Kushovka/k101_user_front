@@ -58,7 +58,6 @@ const SnapshotDetail = () => {
 
   const snapshot = state?.snapshot;
 
-
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
   const handleCopy = (text: string) => {
@@ -107,7 +106,10 @@ const SnapshotDetail = () => {
         </h1>
 
         {/* back button */}
-        <button className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
+        >
           <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
           Назад
         </button>

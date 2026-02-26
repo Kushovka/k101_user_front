@@ -10,6 +10,7 @@ import { ComplaintModal } from "../../../components/field-complaint/ComplaintMod
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import type { SearchUser } from "../../../types/searchDetails.types";
+import { exportPersonDossier } from "../../../api/search";
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -82,6 +83,9 @@ const SearchDetails: React.FC = () => {
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [dossierLoading, setDossierLoading] = useState(false);
 
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt">("pdf");
+  const [exportLoading, setExportLoading] = useState(false);
+
   const [complaintTarget, setComplaintTarget] = useState<{
     docId: string;
     fields: string[];
@@ -89,7 +93,9 @@ const SearchDetails: React.FC = () => {
 
   /* ---------------- helpers ---------------- */
   const state = location.state as SearchDetailsState | null;
+
   const user = state?.item ?? null;
+  console.log(user);
 
   const groupedSources = user?.grouped_sources ?? [];
 
@@ -107,13 +113,44 @@ const SearchDetails: React.FC = () => {
     );
   }
 
-  const sourceFiles = user.source_files ?? [];
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const sourceFiles = Array.from(
+    new Map(
+      (user.source_files ?? []).map((file) => [file.raw_file_id, file]),
+    ).values(),
+  );
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setNotify(true);
     setTimeout(() => setNotify(false), 1200);
   };
+
+  const cleanValue = (value: unknown): string => {
+    if (value === null || value === undefined) return "";
+
+    let str = String(value).trim();
+
+    str = str.replace(/^['"]+|['"]+$/g, "");
+
+    return str;
+  };
+
+  const uniqueEmails = Array.from(
+    new Set(
+      (user.emails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean),
+    ),
+  );
 
   const handleAIDossier = async (id: string) => {
     try {
@@ -132,6 +169,27 @@ const SearchDetails: React.FC = () => {
       setDossierLoading(false);
     }
   };
+
+  const handleExport = async (format: "pdf" | "txt") => {
+    try {
+      setExportLoading(true);
+
+      const blob = await exportPersonDossier(personId, format);
+
+      const safeName =
+        `${user.last_name || "person"}_${user.first_name || ""}`.trim();
+      const filename = `dossier_${safeName || personId}.${format}`;
+
+      downloadBlob(blob, filename);
+    } catch (e) {
+      console.error(e);
+      // можешь тут тост ошибки показать
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  console.log(sourceFiles);
 
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
@@ -153,24 +211,50 @@ const SearchDetails: React.FC = () => {
           Досье: {user.last_name} {user.first_name} {user.middle_name}
         </h1>
 
-        {/* back button */}
-        <button
-          onClick={() =>
-            navigate("/account/search", {
-              state: {
-                restore: true,
-                searchValue: location.state?.searchValue,
-                page: location.state?.page,
-                mode: location.state?.mode,
-              },
-            })
-          }
-          className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
-        >
-          <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
-          Назад
-        </button>
+        <div className="flex items-center justify-between">
+          {/* back button */}
+          <button
+            onClick={() =>
+              navigate("/account/search", {
+                state: {
+                  restore: true,
+                  searchValue: location.state?.searchValue,
+                  page: location.state?.page,
+                  mode: location.state?.mode,
+                },
+              })
+            }
+            className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
+          >
+            <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
+            Назад
+          </button>
+          <div className="flex items-center gap-3">
+            {/* Select формата */}
+            <select
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as "pdf" | "txt")}
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="pdf">PDF</option>
+              <option value="txt">TXT</option>
+            </select>
 
+            {/* Кнопка скачать */}
+            <button
+              disabled={exportLoading}
+              onClick={() => handleExport(exportFormat)}
+              className={clsx(
+                "px-4 py-2 rounded-lg text-sm font-medium transition",
+                exportLoading
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-cyan-500 hover:bg-cyan-600 text-white",
+              )}
+            >
+              {exportLoading ? "Скачивание..." : "Скачать"}
+            </button>
+          </div>
+        </div>
         {/* MAIN INFO */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -223,25 +307,35 @@ const SearchDetails: React.FC = () => {
                   </span>
                 </p>
               )}
+
               {user.snils?.[0] && <p>СНИЛС: {user.snils[0]}</p>}
+
               {user.age && <p>Возраст: {user.age}</p>}
+
               {user.gender && (
                 <p>Пол: {user.gender === "male" ? "Мужской" : "Женский"}</p>
               )}
-              {user.birthdays?.[0] && <p>Дата рождения: {user.birthdays[0]}</p>}
-              {user.emails?.map((e, i) => (
-                <p key={i}>
-                  Email {i + 1}:{" "}
-                  <span
-                    className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
-                    onClick={() => handleCopy(e)}
-                  >
-                    {e}
-                  </span>
-                </p>
-              ))}
 
+              {user.birthdays?.[0] && <p>Дата рождения: {user.birthdays[0]}</p>}
+              {uniqueEmails.length > 0 && (
+                <div className="flex items-start">
+                  <span className="min-w-[50px]">Email:</span>
+
+                  <div className="flex flex-col gap-1">
+                    {uniqueEmails.map((email, i) => (
+                      <span
+                        key={i}
+                        className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
+                        onClick={() => handleCopy(email)}
+                      >
+                        {email}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {user.cities?.[0] && <p>Город: {user.cities[0]}</p>}
+
               {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
 
               {user.addresses?.map((a, i) => (
@@ -337,7 +431,7 @@ const SearchDetails: React.FC = () => {
                                       <span className="text-slate-500">
                                         {label}:
                                       </span>
-                                      <span>{String(fieldValue)}</span>
+                                      <span>{cleanValue(fieldValue)}</span>
                                     </div>
                                   );
                                 },
