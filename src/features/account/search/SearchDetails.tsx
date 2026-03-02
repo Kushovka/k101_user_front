@@ -124,7 +124,6 @@ const SearchDetails: React.FC = () => {
   };
 
   const user = state?.item ?? null;
-  console.log(user);
 
   const groupedSources = user?.grouped_sources ?? [];
 
@@ -141,9 +140,10 @@ const SearchDetails: React.FC = () => {
       </p>
     );
   }
+
   useEffect(() => {
     setIsOpen(true);
-  }, []);
+  }, [setIsOpen]);
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
