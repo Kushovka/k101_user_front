@@ -5,12 +5,12 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import ReactMarkdown from "react-markdown";
 import { useLocation, useNavigate } from "react-router-dom";
+import { exportPersonDossier } from "../../../api/search";
 import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import type { SearchUser } from "../../../types/searchDetails.types";
-import { exportPersonDossier } from "../../../api/search";
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -317,7 +317,8 @@ const SearchDetails: React.FC = () => {
         <div className="flex-1 flex flex-col gap-6">
           {/* title */}
           <h1 className="text-[20px] font-semibold text-slate-900">
-            Досье: {user.last_name} {user.first_name} {user.middle_name}
+            Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
+            {cleanValue(user.middle_name)}
           </h1>
           {/* button */}
           <div className="flex items-center justify-between">
@@ -433,6 +434,7 @@ const SearchDetails: React.FC = () => {
                 {user.birthdays?.[0] && (
                   <p>Дата рождения: {cleanValue(user.birthdays[0])}</p>
                 )}
+
                 {uniqueEmails.length > 0 && (
                   <div className="flex items-start">
                     <span className="min-w-[50px]">Email:</span>
@@ -450,6 +452,7 @@ const SearchDetails: React.FC = () => {
                     </div>
                   </div>
                 )}
+
                 {user.cities?.[0] && <p>Город: {cleanValue(user.cities[0])}</p>}
 
                 {user.ipn?.[0] && <p>ИНН: {cleanValue(user.ipn[0])}</p>}
