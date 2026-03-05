@@ -21,13 +21,21 @@ const Query: React.FC = () => {
 
   const { isOpen } = useSidebar();
 
+  const searchTypeLabels: Record<string, string> = {
+    cascade_phone: "Поиск по телефону",
+    search_name: "Поиск по имени",
+    cascade_email: "Поиск по email",
+    cascade_snils: "Поиск по СНИЛС",
+    cascade_ipn: "Поиск по ИНН",
+    search_address: "Поиск по адресу",
+  };
+
   const fetchHistory = async (page: number) => {
     setLoading(true);
     setError(null);
 
     try {
       const response: SnapshotResponse = await getSnapshots(page, pageSize);
-
 
       setData(response.snapshots);
       setTotalPages(response.total_pages);
@@ -67,8 +75,6 @@ const Query: React.FC = () => {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     fetchHistory(currentPage);
@@ -125,8 +131,7 @@ const Query: React.FC = () => {
             <div className="grid grid-cols-5 text-xs font-medium text-slate-600 bg-slate-50 border-b border-gray-200">
               <div className="py-3 text-center uppercase">ID</div>
               <div className="py-3 text-center uppercase">Тип</div>
-              <div className="py-3 text-center uppercase">Стоимость</div>
-              <div className="py-3 text-center uppercase">Статус</div>
+              <div className="py-3 text-center uppercase">Запрос</div>
               <div className="py-3 text-center uppercase">Дата</div>
             </div>
 
@@ -143,8 +148,13 @@ const Query: React.FC = () => {
                     {item.id}
                   </span>
 
+                  {/* query */}
+                  <span className="text-slate-700">
+                    {searchTypeLabels[item.request_type] ?? item.request_type}
+                  </span>
+
                   {/* TYPE */}
-                  <span className="text-slate-700">{item.request_type}</span>
+                  <span className="text-slate-700">{item.search_query}</span>
 
                   {/* DATE */}
                   <span className="text-slate-600 text-xs">

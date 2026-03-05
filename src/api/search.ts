@@ -20,7 +20,7 @@ export const createComplaint = async (payload: CreateComplaintPayload) => {
 
 export const exportPersonDossier = async (
   entityId: string,
-  format: "pdf" | "txt",
+  format: "pdf" | "txt" | "docs",
 ) => {
   const res = await userApi.get(`/api/v1/person/${entityId}/export`, {
     params: { format },
