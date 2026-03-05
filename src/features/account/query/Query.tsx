@@ -128,7 +128,7 @@ const Query: React.FC = () => {
           {/* TABLE CONTAINER */}
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             {/* HEADER */}
-            <div className="grid grid-cols-5 text-xs font-medium text-slate-600 bg-slate-50 border-b border-gray-200">
+            <div className="grid grid-cols-4 text-xs font-medium text-slate-600 bg-slate-50 border-b border-gray-200">
               <div className="py-3 text-center uppercase">ID</div>
               <div className="py-3 text-center uppercase">Тип</div>
               <div className="py-3 text-center uppercase">Запрос</div>
@@ -141,7 +141,7 @@ const Query: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={() => openSnapshot(item.id)}
-                  className="grid grid-cols-5 text-sm text-slate-700 py-3 items-center text-center hover:bg-slate-50 transition"
+                  className="grid grid-cols-4 text-sm text-slate-700 py-3 items-center text-center hover:bg-slate-50 transition"
                 >
                   {/* ID */}
                   <span className="font-mono text-[13px] text-slate-600">
