@@ -350,7 +350,7 @@ const SearchDetails: React.FC = () => {
               >
                 <option value="pdf">PDF</option>
                 <option value="txt">TXT</option>
-                <option value="docs">DOCX</option>
+                <option value="docx">DOCX</option>
               </select>
 
               {/* Кнопка скачать */}
