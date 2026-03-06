@@ -84,7 +84,7 @@ const SearchDetails: React.FC = () => {
   const [dossierLoading, setDossierLoading] = useState(false);
   const [navDossierOpen, setNavDossierOpen] = useState(true);
 
-  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docs">(
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
     "pdf",
   );
   const [exportLoading, setExportLoading] = useState(false);
@@ -204,7 +204,7 @@ const SearchDetails: React.FC = () => {
     }
   };
 
-  const handleExport = async (format: "pdf" | "txt" | "docs") => {
+  const handleExport = async (format: "pdf" | "txt" | "docx") => {
     try {
       setExportLoading(true);
 
@@ -344,7 +344,7 @@ const SearchDetails: React.FC = () => {
               <select
                 value={exportFormat}
                 onChange={(e) =>
-                  setExportFormat(e.target.value as "pdf" | "txt" | "docs")
+                  setExportFormat(e.target.value as "pdf" | "txt" | "docx")
                 }
                 className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
