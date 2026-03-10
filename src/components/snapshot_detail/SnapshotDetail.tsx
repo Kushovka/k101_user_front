@@ -4,8 +4,15 @@ import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
+import { SearchSnapshot } from "../../types/searchDetails.types";
 import { useSidebar } from "../sidebar/SidebarContext";
 import Toast from "../toast/Toast";
+
+type SearchDetailsState = {
+  snapshot: SearchSnapshot;
+  searchValue?: string;
+  page?: number;
+};
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -50,11 +57,13 @@ const fieldLabels: Record<string, string> = {
 
 const SnapshotDetail = () => {
   const { isOpen } = useSidebar();
-  const { state } = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const [notify, setNotify] = useState(false);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
+
+  const state = location.state as SearchDetailsState | null;
 
   const snapshot = state?.snapshot;
   const user = snapshot?.data?.entity ?? snapshot?.data?.results?.[0] ?? null;
@@ -77,6 +86,10 @@ const SnapshotDetail = () => {
         .map((e: string) => e.trim().toLowerCase())
         .filter(Boolean),
     ),
+  );
+
+  const uniqueAddress = Array.from(
+    new Set((user?.addresses ?? []).map((e) => e.trim()).filter(Boolean)),
   );
 
   const handleCopy = (text: string) => {
@@ -190,7 +203,7 @@ const SnapshotDetail = () => {
                   Телефон:{" "}
                   <span
                     className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
-                    onClick={() => handleCopy(user.phones[0] ?? "")}
+                    onClick={() => handleCopy(user.phones?.[0] ?? "")}
                   >
                     {cleanValue(user.phones?.[0])}
                   </span>
@@ -220,14 +233,19 @@ const SnapshotDetail = () => {
                 </div>
               )}
 
-              {user.cities?.[0] && <p>Город: {cleanValue(user.cities?.[0])}</p>}
               {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
 
-              {user.addresses?.map((a: string, i: number) => (
-                <p key={i}>
-                  Адрес {i + 1}: {cleanValue(a)}
-                </p>
-              ))}
+              {uniqueAddress.length > 0 && (
+                <div className="flex items-start gap-1">
+                  <span className="min-w-[50px]">Адреса:</span>
+
+                  <div className="flex flex-col gap-1">
+                    {uniqueAddress.map((address, i) => (
+                      <span key={i}>{address}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* {user.entity_id && <p>ID: {user.entity_id}</p>} */}
             </div>

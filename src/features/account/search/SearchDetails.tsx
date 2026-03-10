@@ -84,9 +84,7 @@ const SearchDetails: React.FC = () => {
   const [dossierLoading, setDossierLoading] = useState(false);
   const [navDossierOpen, setNavDossierOpen] = useState(true);
 
-  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
-    "pdf",
-  );
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt">("pdf");
   const [exportLoading, setExportLoading] = useState(false);
 
   const [complaintTarget, setComplaintTarget] = useState<{
@@ -186,6 +184,10 @@ const SearchDetails: React.FC = () => {
     ),
   );
 
+  const uniqueAddress = Array.from(
+    new Set((user.addresses ?? []).map((e) => e.trim()).filter(Boolean)),
+  );
+
   const handleAIDossier = async (id: string) => {
     try {
       setDossierLoading(true);
@@ -204,7 +206,7 @@ const SearchDetails: React.FC = () => {
     }
   };
 
-  const handleExport = async (format: "pdf" | "txt" | "docx") => {
+  const handleExport = async (format: "pdf" | "txt") => {
     try {
       setExportLoading(true);
 
@@ -221,6 +223,8 @@ const SearchDetails: React.FC = () => {
       setExportLoading(false);
     }
   };
+
+  console.log(sourceFiles);
 
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
@@ -317,8 +321,7 @@ const SearchDetails: React.FC = () => {
         <div className="flex-1 flex flex-col gap-6">
           {/* title */}
           <h1 className="text-[20px] font-semibold text-slate-900">
-            Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
-            {cleanValue(user.middle_name)}
+            Досье: {user.last_name} {user.first_name} {user.middle_name}
           </h1>
           {/* button */}
           <div className="flex items-center justify-between">
@@ -344,13 +347,12 @@ const SearchDetails: React.FC = () => {
               <select
                 value={exportFormat}
                 onChange={(e) =>
-                  setExportFormat(e.target.value as "pdf" | "txt" | "docx")
+                  setExportFormat(e.target.value as "pdf" | "txt")
                 }
                 className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="pdf">PDF</option>
                 <option value="txt">TXT</option>
-                <option value="docx">DOCX</option>
               </select>
 
               {/* Кнопка скачать */}
@@ -396,19 +398,19 @@ const SearchDetails: React.FC = () => {
               <div className="px-4 py-3 border-t border-gray-200 space-y-2 text-[14px] text-slate-700">
                 {user?.first_name && isValidName(user.first_name) && (
                   <p>
-                    Имя: <span>{cleanValue(user?.first_name)}</span>
+                    Имя: <span>{user?.first_name}</span>
                   </p>
                 )}
 
                 {user?.last_name && isValidName(user.last_name) && (
                   <p>
-                    Фамилия: <span>{cleanValue(user?.last_name)}</span>
+                    Фамилия: <span>{user?.last_name}</span>
                   </p>
                 )}
 
                 {user?.middle_name && isValidName(user.middle_name) && (
                   <p>
-                    Отчество: <span>{cleanValue(user?.middle_name)}</span>
+                    Отчество: <span>{user?.middle_name}</span>
                   </p>
                 )}
 
@@ -419,23 +421,22 @@ const SearchDetails: React.FC = () => {
                       className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
                       onClick={() => handleCopy(user.phones![0])}
                     >
-                      {cleanValue(user.phones![0])}
+                      {user.phones![0]}
                     </span>
                   </p>
                 )}
 
-                {user.snils?.[0] && <p>СНИЛС: {cleanValue(user.snils[0])}</p>}
+                {user.snils?.[0] && <p>СНИЛС: {user.snils[0]}</p>}
 
-                {user.age && <p>Возраст: {cleanValue(user.age)}</p>}
+                {user.age && <p>Возраст: {user.age}</p>}
 
                 {user.gender && (
                   <p>Пол: {user.gender === "male" ? "Мужской" : "Женский"}</p>
                 )}
 
                 {user.birthdays?.[0] && (
-                  <p>Дата рождения: {cleanValue(user.birthdays[0])}</p>
+                  <p>Дата рождения: {user.birthdays[0]}</p>
                 )}
-
                 {uniqueEmails.length > 0 && (
                   <div className="flex items-start">
                     <span className="min-w-[50px]">Email:</span>
@@ -447,22 +448,25 @@ const SearchDetails: React.FC = () => {
                           className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
                           onClick={() => handleCopy(email)}
                         >
-                          {cleanValue(email)}
+                          {email}
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {user.cities?.[0] && <p>Город: {cleanValue(user.cities[0])}</p>}
+                {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
+                {uniqueAddress.length > 0 && (
+                  <div className="flex items-start gap-1">
+                    <span className="min-w-[50px]">Адреса:</span>
 
-                {user.ipn?.[0] && <p>ИНН: {cleanValue(user.ipn[0])}</p>}
-
-                {user.addresses?.map((a, i) => (
-                  <p key={i}>
-                    Адрес {i + 1}: {cleanValue(a)}
-                  </p>
-                ))}
+                    <div className="flex flex-col gap-1">
+                      {uniqueAddress.map((address, i) => (
+                        <span key={i}>{address}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* {user.entity_id && <p>ID: {user.entity_id}</p>} */}
               </div>
