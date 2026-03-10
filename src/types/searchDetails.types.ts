@@ -56,6 +56,17 @@ export interface SearchUser {
   additional_data?: UserAdditionalData;
 }
 
+export interface SearchSnapshot {
+  search_query: string;
+  request_type: string;
+  request_date: string;
+  data: {
+    entity?: SearchUser;
+    results?: SearchUser[];
+    total?: number;
+  };
+}
+
 export type GroupedSource = {
   group_name: string;
   sources: SourceWithFields[];

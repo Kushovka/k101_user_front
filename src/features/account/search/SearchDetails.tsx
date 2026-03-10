@@ -5,12 +5,12 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import ReactMarkdown from "react-markdown";
 import { useLocation, useNavigate } from "react-router-dom";
+import { exportPersonDossier } from "../../../api/search";
 import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import type { SearchUser } from "../../../types/searchDetails.types";
-import { exportPersonDossier } from "../../../api/search";
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -182,6 +182,10 @@ const SearchDetails: React.FC = () => {
     new Set(
       (user.emails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean),
     ),
+  );
+
+  const uniqueAddress = Array.from(
+    new Set((user.addresses ?? []).map((e) => e.trim()).filter(Boolean)),
   );
 
   const handleAIDossier = async (id: string) => {
@@ -450,15 +454,19 @@ const SearchDetails: React.FC = () => {
                     </div>
                   </div>
                 )}
-                {user.cities?.[0] && <p>Город: {user.cities[0]}</p>}
 
                 {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
+                {uniqueAddress.length > 0 && (
+                  <div className="flex items-start gap-1">
+                    <span className="min-w-[50px]">Адреса:</span>
 
-                {user.addresses?.map((a, i) => (
-                  <p key={i}>
-                    Адрес {i + 1}: {a}
-                  </p>
-                ))}
+                    <div className="flex flex-col gap-1">
+                      {uniqueAddress.map((address, i) => (
+                        <span key={i}>{address}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* {user.entity_id && <p>ID: {user.entity_id}</p>} */}
               </div>

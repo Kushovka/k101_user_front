@@ -4,8 +4,15 @@ import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
+import { SearchSnapshot } from "../../types/searchDetails.types";
 import { useSidebar } from "../sidebar/SidebarContext";
 import Toast from "../toast/Toast";
+
+type SearchDetailsState = {
+  snapshot: SearchSnapshot;
+  searchValue?: string;
+  page?: number;
+};
 
 const fieldLabels: Record<string, string> = {
   height: "Рост",
@@ -50,15 +57,40 @@ const fieldLabels: Record<string, string> = {
 
 const SnapshotDetail = () => {
   const { isOpen } = useSidebar();
-  const { state } = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const [notify, setNotify] = useState(false);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
 
+  const state = location.state as SearchDetailsState | null;
+
   const snapshot = state?.snapshot;
+  const user = snapshot?.data?.entity ?? snapshot?.data?.results?.[0] ?? null;
 
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
+
+  const cleanValue = (value: unknown): string => {
+    if (value === null || value === undefined) return "";
+
+    let str = String(value).trim();
+
+    str = str.replace(/^['"]+|['"]+$/g, "");
+
+    return str;
+  };
+
+  const uniqueEmails: string[] = Array.from(
+    new Set(
+      (user?.emails ?? [])
+        .map((e: string) => e.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
+
+  const uniqueAddress = Array.from(
+    new Set((user?.addresses ?? []).map((e) => e.trim()).filter(Boolean)),
+  );
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -74,10 +106,13 @@ const SnapshotDetail = () => {
       </div>
     );
   }
-  const user = snapshot.data.entity;
+
+  if (!user) {
+    return <div className="p-6">Нет данных пользователя</div>;
+  }
 
   const groupedSources = user?.grouped_sources ?? [];
-  const sourceFiles = user.source_files ?? [];
+  const sourceFiles = user?.source_files ?? [];
   const sortGroups = (a: { group_name: string }, b: { group_name: string }) => {
     if (a.group_name === "other") return 1;
     if (b.group_name === "other") return -1;
@@ -94,15 +129,23 @@ const SnapshotDetail = () => {
         />
       )}
       <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm">
-        Сохранённый результат от{" "}
+        Сохранённый результат: <b>{snapshot.search_query}</b> (
+        {snapshot.request_type}) •{" "}
         {new Date(snapshot.request_date).toLocaleString("ru-RU")}
+        {"total" in (snapshot.data ?? {}) && (
+          <>
+            {" "}
+            • Всего найдено: <b>{snapshot.data.total}</b>
+          </>
+        )}
       </div>
 
       <h2 className="font-medium mt-4">Результаты:</h2>
       <div className="w-[1100px] mx-auto flex flex-col gap-6">
         {/* title */}
         <h1 className="text-[20px] font-semibold text-slate-900">
-          Досье: {user.last_name} {user.first_name} {user.middle_name}
+          Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
+          {cleanValue(user.middle_name)}
         </h1>
 
         {/* back button */}
@@ -139,19 +182,19 @@ const SnapshotDetail = () => {
             <div className="px-4 py-3 border-t border-gray-200 space-y-2 text-[14px] text-slate-700">
               {user?.first_name && isValidName(user.first_name) && (
                 <p>
-                  Имя: <span>{user?.first_name}</span>
+                  Имя: <span>{cleanValue(user?.first_name)}</span>
                 </p>
               )}
 
               {user?.last_name && isValidName(user.last_name) && (
                 <p>
-                  Фамилия: <span>{user?.last_name}</span>
+                  Фамилия: <span>{cleanValue(user?.last_name)}</span>
                 </p>
               )}
 
               {user?.middle_name && isValidName(user.middle_name) && (
                 <p>
-                  Отчество: <span>{user?.middle_name}</span>
+                  Отчество: <span>{cleanValue(user?.middle_name)}</span>
                 </p>
               )}
 
@@ -160,9 +203,9 @@ const SnapshotDetail = () => {
                   Телефон:{" "}
                   <span
                     className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
-                    onClick={() => handleCopy(user.phones![0])}
+                    onClick={() => handleCopy(user.phones?.[0] ?? "")}
                   >
-                    {user.phones![0]}
+                    {cleanValue(user.phones?.[0])}
                   </span>
                 </p>
               )}
@@ -172,26 +215,37 @@ const SnapshotDetail = () => {
                 <p>Пол: {user.gender === "male" ? "Мужской" : "Женский"}</p>
               )}
               {user.birthdays?.[0] && <p>Дата рождения: {user.birthdays[0]}</p>}
-              {user.emails?.map((e, i) => (
-                <p key={i}>
-                  Email {i + 1}:{" "}
-                  <span
-                    className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
-                    onClick={() => handleCopy(e)}
-                  >
-                    {e}
-                  </span>
-                </p>
-              ))}
+              {uniqueEmails.length > 0 && (
+                <div className="flex items-start">
+                  <span className="min-w-[50px]">Email:</span>
 
-              {user.cities?.[0] && <p>Город: {user.cities[0]}</p>}
+                  <div className="flex flex-col gap-1">
+                    {uniqueEmails.map((email, i) => (
+                      <span
+                        key={i}
+                        className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
+                        onClick={() => handleCopy(email)}
+                      >
+                        {cleanValue(email)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
 
-              {user.addresses?.map((a, i) => (
-                <p key={i}>
-                  Адрес {i + 1}: {a}
-                </p>
-              ))}
+              {uniqueAddress.length > 0 && (
+                <div className="flex items-start gap-1">
+                  <span className="min-w-[50px]">Адреса:</span>
+
+                  <div className="flex flex-col gap-1">
+                    {uniqueAddress.map((address, i) => (
+                      <span key={i}>{address}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* {user.entity_id && <p>ID: {user.entity_id}</p>} */}
             </div>
@@ -223,7 +277,7 @@ const SnapshotDetail = () => {
               {groupedSources
                 .slice()
                 .sort(sortGroups)
-                .map((group) => {
+                .map((group: any) => {
                   if (!group.sources?.length) return null;
 
                   return (
@@ -236,7 +290,7 @@ const SnapshotDetail = () => {
                       </div>
 
                       {/* Источники внутри группы */}
-                      {group.sources.map((source, index) => {
+                      {group.sources.map((source: any, index: number) => {
                         const sourceName =
                           source.display_name || source.raw_file_id;
 
@@ -268,7 +322,7 @@ const SnapshotDetail = () => {
                                       <span className="text-slate-500">
                                         {label}:
                                       </span>
-                                      <span>{String(fieldValue)}</span>
+                                      <span>{cleanValue(fieldValue)}</span>
                                     </div>
                                   );
                                 },
@@ -297,7 +351,7 @@ const SnapshotDetail = () => {
             </div>
 
             <div className="px-4 py-3 space-y-2 text-[14px]">
-              {sourceFiles.map((file, i) => {
+              {sourceFiles.map((file: any, i: number) => {
                 const name =
                   file.display_name && file.display_name !== "unknown"
                     ? file.display_name
