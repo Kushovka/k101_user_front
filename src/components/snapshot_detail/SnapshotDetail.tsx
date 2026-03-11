@@ -111,8 +111,12 @@ const SnapshotDetail = () => {
     return <div className="p-6">Нет данных пользователя</div>;
   }
 
-  const groupedSources = user?.grouped_sources ?? [];
-  const sourceFiles = user?.source_files ?? [];
+  const groupedSources =
+    user?.grouped_sources ?? Object.values(user?.grouped_data ?? {});
+
+  const sourceFiles = Array.from(
+    new Map((user?.source_files ?? []).map((f) => [f.raw_file_id, f])).values(),
+  );
   const sortGroups = (a: { group_name: string }, b: { group_name: string }) => {
     if (a.group_name === "other") return 1;
     if (b.group_name === "other") return -1;
@@ -132,10 +136,9 @@ const SnapshotDetail = () => {
         Сохранённый результат: <b>{snapshot.search_query}</b> (
         {snapshot.request_type}) •{" "}
         {new Date(snapshot.request_date).toLocaleString("ru-RU")}
-        {"total" in (snapshot.data ?? {}) && (
+        {"total_records_found" in (snapshot.data ?? {}) && (
           <>
-            {" "}
-            • Всего найдено: <b>{snapshot.data.total}</b>
+            • Всего найдено: <b>{snapshot.data?.total_records_found}</b>
           </>
         )}
       </div>

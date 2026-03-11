@@ -64,6 +64,7 @@ export interface SearchSnapshot {
     entity?: SearchUser;
     results?: SearchUser[];
     total?: number;
+    total_records_found?: number;
   };
 }
 

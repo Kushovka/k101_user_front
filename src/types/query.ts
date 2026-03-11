@@ -8,6 +8,7 @@ export interface SnapshotItem {
 
 export interface SnapshotResponse {
   total: number;
+  total_records_found: number;
   snapshots: SnapshotItem[];
   page: number;
   page_size: number;
