@@ -66,7 +66,11 @@ const SnapshotDetail = () => {
   const state = location.state as SearchDetailsState | null;
 
   const snapshot = state?.snapshot;
-  const user = snapshot?.data?.entity ?? snapshot?.data?.results?.[0] ?? null;
+  const user =
+    snapshot?.data?.entity ??
+    snapshot?.data?.entities?.[0]?.entity ??
+    snapshot?.data?.results?.[0] ??
+    null;
 
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
@@ -138,7 +142,12 @@ const SnapshotDetail = () => {
         {new Date(snapshot.request_date).toLocaleString("ru-RU")}
         {"total_records_found" in (snapshot.data ?? {}) && (
           <>
-            • Всего найдено: <b>{snapshot.data?.total_records_found}</b>
+            • Всего найдено:{" "}
+            <b>
+              {snapshot?.data && "total_records_found" in snapshot.data
+                ? snapshot.data.total_records_found
+                : undefined}
+            </b>
           </>
         )}
       </div>

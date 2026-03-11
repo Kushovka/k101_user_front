@@ -56,12 +56,17 @@ export interface SearchUser {
   additional_data?: UserAdditionalData;
 }
 
+export interface SearchEntityWrapper {
+  entity: SearchUser;
+}
+
 export interface SearchSnapshot {
   search_query: string;
   request_type: string;
   request_date: string;
   data: {
     entity?: SearchUser;
+    entities?: SearchEntityWrapper[];
     results?: SearchUser[];
     total?: number;
     total_records_found?: number;
