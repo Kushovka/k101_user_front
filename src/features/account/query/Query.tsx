@@ -21,13 +21,29 @@ const Query: React.FC = () => {
 
   const { isOpen } = useSidebar();
 
+  const searchTypeLabels: Record<string, string> = {
+    cascade_phone: "Поиск по телефону",
+    search_name: "Поиск по имени",
+    cascade_email: "Поиск по email",
+    cascade_snils: "Поиск по СНИЛС",
+    cascade_ipn: "Поиск по ИНН",
+    search_address: "Поиск по адресу",
+    advanced_phone: "Поиск по телефону",
+    advanced_name: "Поиск по ФИО",
+    advanced_email: "Поиск по email",
+    advanced_birthday: "Поиск по дате рождения",
+    advanced_snils: "Поиск по СНИЛС",
+    advanced_ipn: "Поиск по ИНН",
+    advanced_address: "Поиск по адресу",
+    advanced_passport: "Поиск по паспорту",
+  };
+
   const fetchHistory = async (page: number) => {
     setLoading(true);
     setError(null);
 
     try {
       const response: SnapshotResponse = await getSnapshots(page, pageSize);
-
 
       setData(response.snapshots);
       setTotalPages(response.total_pages);
@@ -67,8 +83,6 @@ const Query: React.FC = () => {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     fetchHistory(currentPage);
@@ -116,17 +130,16 @@ const Query: React.FC = () => {
 
           {/* STATS */}
           <div className="flex items-center justify-between text-sm text-slate-600">
-            <span>Всего Всего запросов: {total}</span>
+            <span>Всего запросов: {total}</span>
           </div>
 
           {/* TABLE CONTAINER */}
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             {/* HEADER */}
-            <div className="grid grid-cols-5 text-xs font-medium text-slate-600 bg-slate-50 border-b border-gray-200">
+            <div className="grid grid-cols-[80px_1fr_1fr_1fr] text-xs font-medium text-slate-600 bg-slate-50 border-b border-gray-200">
               <div className="py-3 text-center uppercase">ID</div>
               <div className="py-3 text-center uppercase">Тип</div>
-              <div className="py-3 text-center uppercase">Стоимость</div>
-              <div className="py-3 text-center uppercase">Статус</div>
+              <div className="py-3 text-center uppercase">Запрос</div>
               <div className="py-3 text-center uppercase">Дата</div>
             </div>
 
@@ -136,15 +149,20 @@ const Query: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={() => openSnapshot(item.id)}
-                  className="grid grid-cols-5 text-sm text-slate-700 py-3 items-center text-center hover:bg-slate-50 transition"
+                  className="grid grid-cols-[80px_1fr_1fr_1fr] text-sm text-slate-700 py-3 items-center text-center hover:bg-slate-50 transition"
                 >
                   {/* ID */}
                   <span className="font-mono text-[13px] text-slate-600">
                     {item.id}
                   </span>
 
+                  {/* query */}
+                  <span className="text-slate-700">
+                    {searchTypeLabels[item.request_type] ?? item.request_type}
+                  </span>
+
                   {/* TYPE */}
-                  <span className="text-slate-700">{item.request_type}</span>
+                  <span className="text-slate-700">{item.search_query}</span>
 
                   {/* DATE */}
                   <span className="text-slate-600 text-xs">
