@@ -185,6 +185,12 @@ const SearchDetails: React.FC = () => {
     ),
   );
 
+  const uniquePhones = Array.from(
+    new Set(
+      (user.phones ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean),
+    ),
+  );
+
   const uniqueAddress = Array.from(
     new Set((user.addresses ?? []).map((e) => e.trim()).filter(Boolean)),
   );
@@ -322,7 +328,8 @@ const SearchDetails: React.FC = () => {
         <div className="flex-1 flex flex-col gap-6">
           {/* title */}
           <h1 className="text-[20px] font-semibold text-slate-900">
-            Досье: {user.last_name} {user.first_name} {user.middle_name}
+            Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
+            {cleanValue(user.middle_name)}
           </h1>
           {/* button */}
           <div className="flex items-center justify-between">
@@ -399,44 +406,50 @@ const SearchDetails: React.FC = () => {
               <div className="px-4 py-3 border-t border-gray-200 space-y-2 text-[14px] text-slate-700">
                 {user?.first_name && isValidName(user.first_name) && (
                   <p>
-                    Имя: <span>{user?.first_name}</span>
+                    Имя: <span>{cleanValue(user?.first_name)}</span>
                   </p>
                 )}
 
                 {user?.last_name && isValidName(user.last_name) && (
                   <p>
-                    Фамилия: <span>{user?.last_name}</span>
+                    Фамилия: <span>{cleanValue(user?.last_name)}</span>
                   </p>
                 )}
 
                 {user?.middle_name && isValidName(user.middle_name) && (
                   <p>
-                    Отчество: <span>{user?.middle_name}</span>
+                    Отчество: <span>{cleanValue(user?.middle_name)}</span>
                   </p>
                 )}
+                
+                {uniquePhones.length > 0 && (
+                  <div className="flex items-start gap-1">
+                    <span className="min-w-[50px]">Телефоны:</span>
 
-                {user.phones?.[0] && (
-                  <p>
-                    Телефон:{" "}
-                    <span
-                      className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
-                      onClick={() => handleCopy(user.phones![0])}
-                    >
-                      {user.phones![0]}
-                    </span>
-                  </p>
+                    <div className="flex flex-col gap-1">
+                      {uniquePhones.map((phone, i) => (
+                        <span
+                          key={i}
+                          className="cursor-copy text-cyan-600 hover:text-cyan-700 transition"
+                          onClick={() => handleCopy(phone)}
+                        >
+                          {cleanValue(phone)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
-                {user.snils?.[0] && <p>СНИЛС: {user.snils[0]}</p>}
+                {user.snils?.[0] && <p>СНИЛС: {cleanValue(user.snils[0])}</p>}
 
-                {user.age && <p>Возраст: {user.age}</p>}
+                {user.age && <p>Возраст: {cleanValue(user.age)}</p>}
 
                 {user.gender && (
                   <p>Пол: {user.gender === "male" ? "Мужской" : "Женский"}</p>
                 )}
 
                 {user.birthdays?.[0] && (
-                  <p>Дата рождения: {user.birthdays[0]}</p>
+                  <p>Дата рождения: {cleanValue(user.birthdays[0])}</p>
                 )}
                 {uniqueEmails.length > 0 && (
                   <div className="flex items-start">
@@ -456,7 +469,7 @@ const SearchDetails: React.FC = () => {
                   </div>
                 )}
 
-                {user.ipn?.[0] && <p>ИНН: {user.ipn[0]}</p>}
+                {user.ipn?.[0] && <p>ИНН: {cleanValue(user.ipn[0])}</p>}
                 {uniqueAddress.length > 0 && (
                   <div className="flex items-start gap-1">
                     <span className="min-w-[50px]">Адреса:</span>
