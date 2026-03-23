@@ -9,7 +9,6 @@ import type { SearchContextValue } from "../../../types/searchContext.types";
 
 import type {
   SearchResultItem,
-  SearchForm,
   SearchResponse,
 } from "../../../types/search";
 

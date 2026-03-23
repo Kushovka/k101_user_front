@@ -120,7 +120,7 @@ const Query: React.FC = () => {
       )}
 
       {loading ? (
-        <Loader />
+        <Loader fullScreen />
       ) : (
         <div className="w-full mx-auto flex flex-col gap-6">
           {/* TITLE */}

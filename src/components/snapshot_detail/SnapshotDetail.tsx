@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
+import { exportSnapshotDossier } from "../../api/query";
 import { SearchSnapshot } from "../../types/searchDetails.types";
 import { useSidebar } from "../sidebar/SidebarContext";
 import Toast from "../toast/Toast";
@@ -63,6 +64,11 @@ const SnapshotDetail = () => {
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
 
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
+    "pdf",
+  );
+  const [exportLoading, setExportLoading] = useState(false);
+
   const state = location.state as SearchDetailsState | null;
 
   const snapshot = state?.snapshot;
@@ -82,6 +88,17 @@ const SnapshotDetail = () => {
     str = str.replace(/^['"]+|['"]+$/g, "");
 
     return str;
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const uniqueEmails: string[] = Array.from(
@@ -120,6 +137,29 @@ const SnapshotDetail = () => {
   if (!user) {
     return <div className="p-6">Нет данных пользователя</div>;
   }
+
+  const handleExport = async () => {
+    try {
+      setExportLoading(true);
+
+      const blob = await exportSnapshotDossier(
+        snapshot.request_id,
+        exportFormat,
+        user?.entity_id, // важно для multi-result
+      );
+
+      const safeName =
+        `${user.last_name || "person"}_${user.first_name || ""}`.trim();
+
+      const filename = `snapshot_${safeName || snapshot.request_id}.${exportFormat}`;
+
+      downloadBlob(blob, filename);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const groupedSources =
     user?.grouped_sources ?? Object.values(user?.grouped_data ?? {});
@@ -165,16 +205,44 @@ const SnapshotDetail = () => {
           Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
           {cleanValue(user.middle_name)}
         </h1>
+        <div className="flex items-center justify-between">
+          {/* back button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
+          >
+            <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
+            Назад
+          </button>
 
-        {/* back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
-        >
-          <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
-          Назад
-        </button>
+          {/* download dossier */}
+          <div className="flex items-center gap-3">
+            <select
+              value={exportFormat}
+              onChange={(e) =>
+                setExportFormat(e.target.value as "pdf" | "txt" | "docx")
+              }
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white"
+            >
+              <option value="pdf">PDF</option>
+              <option value="txt">TXT</option>
+              <option value="docx">DOCX</option>
+            </select>
 
+            <button
+              disabled={exportLoading}
+              onClick={handleExport}
+              className={clsx(
+                "px-4 py-2 rounded-lg text-sm font-medium transition",
+                exportLoading
+                  ? "bg-gray-300 text-gray-600"
+                  : "bg-cyan-500 hover:bg-cyan-600 text-white",
+              )}
+            >
+              {exportLoading ? "Скачивание..." : "Скачать"}
+            </button>
+          </div>
+        </div>
         {/* MAIN INFO */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -233,7 +301,7 @@ const SnapshotDetail = () => {
                   </div>
                 </div>
               )}
-              
+
               {user.snils?.[0] && <p>СНИЛС: {user.snils[0]}</p>}
               {user.age && <p>Возраст: {user.age}</p>}
               {user.gender && (

@@ -14,7 +14,9 @@ const getHeaders = (): Record<string, string> => {
 };
 
 export const createComplaint = async (payload: CreateComplaintPayload) => {
-  const { data } = await userApi.post("/api/v1/complaints", payload);
+  const { data } = await userApi.post("/api/v1/complaints", payload, {
+    headers: getHeaders(),
+  });
   return data;
 };
 

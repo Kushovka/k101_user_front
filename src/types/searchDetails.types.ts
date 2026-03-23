@@ -61,6 +61,7 @@ export interface SearchEntityWrapper {
 }
 
 export interface SearchSnapshot {
+  request_id: number;
   search_query: string;
   request_type: string;
   request_date: string;
