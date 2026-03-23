@@ -78,6 +78,7 @@ const SearchDetails: React.FC = () => {
   const { isOpen, setIsOpen } = useSidebar();
 
   const [notify, setNotify] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(true);
   const [aiDossier, setAIDossier] = useState("");
@@ -224,8 +225,17 @@ const SearchDetails: React.FC = () => {
       const filename = `dossier_${safeName || personId}.${format}`;
 
       downloadBlob(blob, filename);
-    } catch (e) {
-      console.error(e);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+
+      if (status === 402) {
+        setError("Недостаточно средств. Пополните баланс");
+      } else if (status === 500) {
+        setError("Ошибка сервера");
+      } else {
+        setError(data?.message || "Ошибка поиска");
+      }
     } finally {
       setExportLoading(false);
     }
@@ -246,7 +256,9 @@ const SearchDetails: React.FC = () => {
           onClose={() => setNotify(false)}
         />
       )}
-
+      {error && (
+        <Toast message={error} type="error" onClose={() => setError(null)} />
+      )}
       <div className="w-[1100px] ml-[420px]">
         {/* ЛЕВАЯ ФИКС НАВИГАЦИЯ */}
         <div
@@ -421,7 +433,7 @@ const SearchDetails: React.FC = () => {
                     Отчество: <span>{cleanValue(user?.middle_name)}</span>
                   </p>
                 )}
-                
+
                 {uniquePhones.length > 0 && (
                   <div className="flex items-start gap-1">
                     <span className="min-w-[50px]">Телефоны:</span>
