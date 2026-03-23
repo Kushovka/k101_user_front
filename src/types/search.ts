@@ -27,3 +27,9 @@ export interface SearchResponse {
   was_free?: boolean;
   free_requests_remaining?: number;
 }
+
+export interface CreateComplaintPayload {
+  doc_id: string;
+  field_name: string;
+  message: string;
+}

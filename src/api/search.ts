@@ -14,13 +14,15 @@ const getHeaders = (): Record<string, string> => {
 };
 
 export const createComplaint = async (payload: CreateComplaintPayload) => {
-  const { data } = await userApi.post("/api/v1/complaints", payload);
+  const { data } = await userApi.post("/api/v1/complaints", payload, {
+    headers: getHeaders(),
+  });
   return data;
 };
 
 export const exportPersonDossier = async (
   entityId: string,
-  format: "pdf" | "txt",
+  format: "pdf" | "txt" | "docx",
 ) => {
   const res = await userApi.get(`/api/v1/person/${entityId}/export`, {
     params: { format },
