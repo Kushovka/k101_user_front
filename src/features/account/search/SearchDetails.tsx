@@ -80,7 +80,7 @@ const SearchDetails: React.FC = () => {
   const [notify, setNotify] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openMain, setOpenMain] = useState(true);
-  const [openDossier, setOpenDossier] = useState(true);
+  const [openDossier, setOpenDossier] = useState(false);
   const [aiDossier, setAIDossier] = useState("");
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [dossierLoading, setDossierLoading] = useState(false);

@@ -34,10 +34,10 @@ export default function SignIn() {
     try {
       const resp = await login(data.username, data.password);
 
-      if (resp.requires_2fa) {
-        navigate("/verify-2fa");
-        return;
-      }
+      // if (resp.requires_2fa) {
+      //   navigate("/verify-2fa");
+      //   return;
+      // }
 
       navigate("/account/profile");
     } catch (err) {
