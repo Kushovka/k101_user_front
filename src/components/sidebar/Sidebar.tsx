@@ -1,13 +1,13 @@
-import { FaRegCircleUser } from "react-icons/fa6";
-import { IoDocumentTextOutline, IoExitOutline } from "react-icons/io5";
-import { IoIosSearch } from "react-icons/io";
-import { RxHamburgerMenu } from "react-icons/rx";
-import { GoChevronRight } from "react-icons/go";
-import { MdAttachMoney } from "react-icons/md";
-
 import clsx from "clsx";
-import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { FiMessageSquare } from "react-icons/fi";
+import { GoChevronRight } from "react-icons/go";
+import { IoIosSearch } from "react-icons/io";
+import { IoDocumentTextOutline, IoExitOutline } from "react-icons/io5";
+import { MdAttachMoney } from "react-icons/md";
+import { RxHamburgerMenu } from "react-icons/rx";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSidebar } from "./SidebarContext";
 
 import type { ReactElement, SVGProps } from "react";
@@ -25,7 +25,6 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { user } = useUserStore();
 
-
   const { isOpen, setIsOpen } = useSidebar();
 
   // links
@@ -36,6 +35,11 @@ const Sidebar: React.FC = () => {
       icon: <IoDocumentTextOutline />,
       path: "/account/query",
       disabled: !user?.is_email_verified,
+    },
+    {
+      name: "Техподдержка",
+      icon: <FiMessageSquare />,
+      path: "/account/appeals",
     },
     {
       name: "Тарифы",
