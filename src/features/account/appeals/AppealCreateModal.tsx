@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { createAppeal } from "../../../api/appeals";
+import Toast from "../../../components/toast/Toast";
 
 type Props = {
   onClose: () => void;
@@ -20,11 +21,23 @@ const AppealCreateModal = ({ onClose, onCreated }: Props) => {
   const [message, setMessage] = useState("");
   const [category, setCategory] = useState<keyof typeof categoryMap>("general");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notify, setNotify] = useState<string | null>(null);
 
   const isDisabled = !subject.trim() || !message.trim();
 
   const handleSubmit = async () => {
     if (isDisabled) return;
+
+    if (subject.trim().length < 5) {
+      setError("Тема минимум 5 символов");
+      return;
+    }
+
+    if (message.trim().length < 10) {
+      setError("Сообщение минимум 10 символов");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -35,10 +48,19 @@ const AppealCreateModal = ({ onClose, onCreated }: Props) => {
         category,
       });
 
+      setNotify("Ваше обращение успешно оправлено");
+
       onCreated();
       onClose();
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail;
+
+      if (Array.isArray(detail)) {
+        // берём первую ошибку
+        setError(detail[0]?.msg || "Ошибка");
+      } else {
+        setError("Ошибка при отправке");
+      }
     } finally {
       setLoading(false);
     }
@@ -49,6 +71,12 @@ const AppealCreateModal = ({ onClose, onCreated }: Props) => {
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
       onClick={onClose}
     >
+      {error && (
+        <Toast message={error} type="error" onClose={() => setError(null)} />
+      )}
+      {notify && (
+        <Toast message={notify} type="access" onClose={() => setNotify(null)} />
+      )}
       <div
         className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
