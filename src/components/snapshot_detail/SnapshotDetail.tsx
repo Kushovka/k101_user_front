@@ -1,10 +1,9 @@
 import clsx from "clsx";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
-import { exportSnapshotDossier } from "../../api/query";
 import { SearchSnapshot } from "../../types/searchDetails.types";
 import { useSidebar } from "../sidebar/SidebarContext";
 import Toast from "../toast/Toast";
@@ -57,19 +56,25 @@ const fieldLabels: Record<string, string> = {
 };
 
 const SnapshotDetail = () => {
-  const { isOpen } = useSidebar();
+  const { isOpen, setIsOpen } = useSidebar();
+  const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const location = useLocation();
   const navigate = useNavigate();
   const [notify, setNotify] = useState(false);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
 
-  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
-    "pdf",
-  );
-  const [exportLoading, setExportLoading] = useState(false);
-
   const state = location.state as SearchDetailsState | null;
+
+  const sectionRefs = useRef<{
+    main: HTMLDivElement | null;
+    dossier: HTMLDivElement | null;
+    sources: HTMLDivElement | null;
+  }>({
+    main: null,
+    dossier: null,
+    sources: null,
+  });
 
   const snapshot = state?.snapshot;
   const user =
@@ -77,6 +82,10 @@ const SnapshotDetail = () => {
     snapshot?.data?.entities?.[0]?.entity ??
     snapshot?.data?.results?.[0] ??
     null;
+
+  useEffect(() => {
+    setIsOpen(true);
+  }, [setIsOpen]);
 
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
@@ -88,17 +97,6 @@ const SnapshotDetail = () => {
     str = str.replace(/^['"]+|['"]+$/g, "");
 
     return str;
-  };
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   };
 
   const uniqueEmails: string[] = Array.from(
@@ -138,26 +136,17 @@ const SnapshotDetail = () => {
     return <div className="p-6">Нет данных пользователя</div>;
   }
 
-  const handleExport = async () => {
-    try {
-      setExportLoading(true);
+  const scrollToSection = (key: keyof typeof sectionRefs.current) => {
+    const el = sectionRefs.current[key];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
-      const blob = await exportSnapshotDossier(
-        snapshot.request_id,
-        exportFormat,
-        user?.entity_id, // важно для multi-result
-      );
-
-      const safeName =
-        `${user.last_name || "person"}_${user.first_name || ""}`.trim();
-
-      const filename = `snapshot_${safeName || snapshot.request_id}.${exportFormat}`;
-
-      downloadBlob(blob, filename);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setExportLoading(false);
+  const scrollToGroup = (groupName: string) => {
+    const el = groupRefs.current[groupName];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -182,69 +171,101 @@ const SnapshotDetail = () => {
           onClose={() => setNotify(false)}
         />
       )}
-      <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm">
-        Сохранённый результат: <b>{snapshot.search_query}</b> (
-        {snapshot.request_type}) •{" "}
-        {new Date(snapshot.request_date).toLocaleString("ru-RU")}
-        {"total_records_found" in (snapshot.data ?? {}) && (
-          <>
-            • Всего найдено:{" "}
-            <b>
-              {snapshot?.data && "total_records_found" in snapshot.data
-                ? snapshot.data.total_records_found
-                : undefined}
-            </b>
-          </>
+      {/* LEFT NAVIGATION */}
+      <div
+        className={clsx(
+          "fixed top-0 bottom-0 h-full w-[260px]",
+          isOpen ? "left-[140px]" : "left-[360px]",
         )}
+      >
+        <div className="h-full bg-white border border-gray-200 p-4 shadow-sm flex flex-col">
+          <div className="text-sm font-semibold text-slate-700 mb-4">
+            Навигация
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-3 text-sm">
+            <button
+              onClick={() => scrollToSection("main")}
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50"
+            >
+              Основная информация
+            </button>
+
+            <button
+              onClick={() => scrollToSection("dossier")}
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50"
+            >
+              Полное досье
+            </button>
+
+            {/* группы */}
+            <div className="ml-2 space-y-1">
+              {groupedSources
+                .slice()
+                .sort(sortGroups)
+                .map((group: any) => (
+                  <button
+                    key={group.group_name}
+                    onClick={() => {
+                      scrollToSection("dossier");
+                      scrollToGroup(group.group_name);
+                    }}
+                    className="w-full text-left px-2 py-1 text-xs hover:bg-cyan-50 rounded"
+                  >
+                    {group.group_name === "other"
+                      ? "Другие источники"
+                      : group.group_name}
+                  </button>
+                ))}
+            </div>
+
+            <button
+              onClick={() => scrollToSection("sources")}
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50"
+            >
+              Источники данных
+            </button>
+          </div>
+        </div>
       </div>
 
-      <h2 className="font-medium mt-4">Результаты:</h2>
-      <div className="w-[1100px] mx-auto flex flex-col gap-6">
+      <div className="w-[1100px] ml-[420px] flex flex-col gap-6">
+        {/* TITLE */}
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm">
+          Сохранённый результат: <b>{snapshot.search_query}</b> (
+          {snapshot.request_type}) •{" "}
+          {new Date(snapshot.request_date).toLocaleString("ru-RU")}
+          {"total_records_found" in (snapshot.data ?? {}) && (
+            <>
+              • Всего найдено:{" "}
+              <b>
+                {snapshot?.data && "total_records_found" in snapshot.data
+                  ? snapshot.data.total_records_found
+                  : undefined}
+              </b>
+            </>
+          )}
+        </div>
         {/* title */}
         <h1 className="text-[20px] font-semibold text-slate-900">
           Досье: {cleanValue(user.last_name)} {cleanValue(user.first_name)}{" "}
           {cleanValue(user.middle_name)}
         </h1>
-        <div className="flex items-center justify-between">
-          {/* back button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
-          >
-            <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
-            Назад
-          </button>
 
-          {/* download dossier */}
-          <div className="flex items-center gap-3">
-            <select
-              value={exportFormat}
-              onChange={(e) =>
-                setExportFormat(e.target.value as "pdf" | "txt" | "docx")
-              }
-              className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white"
-            >
-              <option value="pdf">PDF</option>
-              <option value="txt">TXT</option>
-              <option value="docx">DOCX</option>
-            </select>
+        {/* back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
+        >
+          <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
+          Назад
+        </button>
 
-            <button
-              disabled={exportLoading}
-              onClick={handleExport}
-              className={clsx(
-                "px-4 py-2 rounded-lg text-sm font-medium transition",
-                exportLoading
-                  ? "bg-gray-300 text-gray-600"
-                  : "bg-cyan-500 hover:bg-cyan-600 text-white",
-              )}
-            >
-              {exportLoading ? "Скачивание..." : "Скачать"}
-            </button>
-          </div>
-        </div>
         {/* MAIN INFO */}
         <motion.div
+          ref={(el) => {
+            sectionRefs.current.main = el;
+          }}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
@@ -347,6 +368,9 @@ const SnapshotDetail = () => {
 
         {/* DOSSIER */}
         <motion.div
+          ref={(el) => {
+            sectionRefs.current.dossier = el;
+          }}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
@@ -374,7 +398,13 @@ const SnapshotDetail = () => {
                   if (!group.sources?.length) return null;
 
                   return (
-                    <div key={group.group_name} className="space-y-4">
+                    <div
+                      key={group.group_name}
+                      ref={(el) => {
+                        groupRefs.current[group.group_name] = el;
+                      }}
+                      className="space-y-4"
+                    >
                       {/* Заголовок группы */}
                       <div className="font-medium text-slate-800">
                         {group.group_name === "other"
@@ -434,6 +464,9 @@ const SnapshotDetail = () => {
         {/* SOURCE FILES */}
         {sourceFiles.length > 0 && (
           <motion.div
+            ref={(el) => {
+              sectionRefs.current.sources = el;
+            }}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
