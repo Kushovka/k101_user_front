@@ -27,6 +27,7 @@ import SearchDetails from "./features/account/search/SearchDetails";
 import Register from "./features/auth/Register";
 import Verify2FA from "./features/auth/Verify2FA";
 import { useBankIdleLogout } from "./hooks/logout/useBankIdleLogout";
+import News from "./features/account/news/News";
 
 const App: React.FC = () => {
   const isAuth = Boolean(localStorage.getItem("access_token"));
@@ -101,6 +102,7 @@ const App: React.FC = () => {
           <Route>
             <Route path="query" element={<Query />} />
             <Route path="appeals" element={<Appeals />} />
+            <Route path="news" element={<News />} />
             <Route path="snapshot-details" element={<SnapshotDetail />} />
           </Route>
 

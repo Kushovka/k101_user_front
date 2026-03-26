@@ -5,7 +5,6 @@ import { getMyAppeals } from "../../../api/appeals";
 import { getMyComplaints } from "../../../api/profile";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import { Appeal } from "../../../types/appeals";
-
 import { Complaint } from "../../../types/complaint";
 import AppealCreateModal from "./AppealCreateModal";
 
@@ -79,7 +78,7 @@ const Appeals = () => {
               : "text-slate-500 hover:bg-slate-50",
           )}
         >
-          Обращения пользователей
+          Мои обращения
         </button>
       </div>
 
