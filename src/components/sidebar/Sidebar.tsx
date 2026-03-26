@@ -4,7 +4,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { FiMessageSquare } from "react-icons/fi";
 import { GoChevronRight } from "react-icons/go";
 import { IoIosSearch } from "react-icons/io";
-import { IoDocumentTextOutline, IoExitOutline } from "react-icons/io5";
+import { IoDocumentTextOutline, IoExitOutline, IoNewspaperOutline } from "react-icons/io5";
 import { MdAttachMoney } from "react-icons/md";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,14 +37,19 @@ const Sidebar: React.FC = () => {
       disabled: !user?.is_email_verified,
     },
     {
+      name: "Тарифы",
+      icon: <MdAttachMoney />,
+      path: "/account/plans",
+    },
+    {
       name: "Техподдержка",
       icon: <FiMessageSquare />,
       path: "/account/appeals",
     },
     {
-      name: "Тарифы",
-      icon: <MdAttachMoney />,
-      path: "/account/plans",
+      name: "Новости",
+      icon: <IoNewspaperOutline />,
+      path: "/account/news",
     },
     { name: "Поиск", icon: <IoIosSearch />, path: "/account/search" },
   ];

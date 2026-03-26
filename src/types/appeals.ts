@@ -21,3 +21,4 @@ export type AppealsResponse = {
   total_pages: number;
   items: Appeal[];
 };
+

@@ -19,6 +19,7 @@ import PaymentSuccess from "./components/paymentSuccess/PaymentSuccess";
 import { SidebarProvider } from "./components/sidebar/SidebarContext";
 import SnapshotDetail from "./components/snapshot_detail/SnapshotDetail";
 import Appeals from "./features/account/appeals/Appeals";
+import News from "./features/account/news/News";
 import Plans from "./features/account/plans/Plans";
 import Profile from "./features/account/profile/Profile";
 import Query from "./features/account/query/Query";
@@ -101,6 +102,7 @@ const App: React.FC = () => {
           <Route>
             <Route path="query" element={<Query />} />
             <Route path="appeals" element={<Appeals />} />
+            <Route path="news" element={<News />} />
             <Route path="snapshot-details" element={<SnapshotDetail />} />
           </Route>
 

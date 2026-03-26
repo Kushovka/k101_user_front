@@ -39,7 +39,7 @@ const Profile = () => {
     "cryptocloud" | "bithide" | "plisio"
   >("plisio");
 
-  const [myComplaints, setMyComplaints] = useState<Complaint[]>([]);
+  
 
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
@@ -116,16 +116,7 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    const handleComplaints = async () => {
-      try {
-        const res = await getMyComplaints();
-        setMyComplaints(res.items);
 
-      } catch (err) {}
-    };
-    handleComplaints();
-  }, []);
 
   const toastConfig: Record<
     NotifyType,
@@ -285,91 +276,8 @@ const Profile = () => {
                 Мои обращения
               </h2>
 
-              {myComplaints.length === 0 ? (
-                <p className="text-sm text-slate-500">
-                  У вас пока нет обращений
-                </p>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {myComplaints.map((item) => {
-                    const statusColor =
-                      {
-                        pending: "bg-yellow-100 text-yellow-700",
-                        resolved: "bg-green-100 text-green-700",
-                        rejected: "bg-red-100 text-red-700",
-                        reviewed: "bg-blue-100 text-blue-700",
-                      }[item.status] ?? "bg-gray-100 text-gray-600";
 
-                    const statusLabel =
-                      {
-                        pending: "На рассмотрении",
-                        resolved: "Исправлено",
-                        rejected: "Отклонено",
-                        reviewed: "Проверено",
-                      }[item.status] ?? item.status;
 
-                    return (
-                      <div
-                        key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2 hover:bg-gray-50 transition"
-                      >
-                        {/* верхняя строка */}
-                        <div className="flex justify-between items-center">
-                          <div className="text-sm text-slate-500">
-                            Документ:{" "}
-                            <span className="font-medium text-slate-700">
-                              {item.doc_id}
-                            </span>
-                          </div>
-
-                          <span
-                            className={`px-2 py-1 rounded-md text-xs font-medium ${statusColor}`}
-                          >
-                            {statusLabel}
-                          </span>
-                        </div>
-
-                        {/* поле */}
-                        <div className="text-sm">
-                          <span className="text-slate-500">Поле:</span>{" "}
-                          <span className="font-medium text-slate-800">
-                            {item.field_name}
-                          </span>
-                        </div>
-
-                        {/* сообщение */}
-                        <div className="text-sm text-slate-700">
-                          {item.message}
-                        </div>
-
-                        {/* дата */}
-                        <div className="text-xs text-slate-400 mt-1">
-                          {new Date(item.created_at).toLocaleString()}
-                        </div>
-                        {(item.status === "resolved" ||
-                          item.status === "rejected") &&
-                          item.admin_comment && (
-                            <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                              <div className="text-xs text-slate-500 mb-1">
-                                Ответ администратора
-                              </div>
-
-                              <div className="text-sm text-slate-800">
-                                {item.admin_comment}
-                              </div>
-
-                              {item.reviewed_at && (
-                                <div className="text-xs text-slate-400 mt-1">
-                                  {new Date(item.reviewed_at).toLocaleString()}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
 
             {/* MODAL */}
