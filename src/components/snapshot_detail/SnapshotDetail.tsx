@@ -163,7 +163,9 @@ const SnapshotDetail = () => {
   };
 
   return (
-    <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
+    <section
+      className={clsx("section py-16", isOpen ? "pl-[116px]" : "pl-[336px]")}
+    >
       {notify && (
         <Toast
           type="access"
@@ -174,11 +176,11 @@ const SnapshotDetail = () => {
       {/* LEFT NAVIGATION */}
       <div
         className={clsx(
-          "fixed top-0 bottom-0 h-full w-[260px]",
+          "fixed top-12 bottom-0 h-full w-[260px]",
           isOpen ? "left-[140px]" : "left-[360px]",
         )}
       >
-        <div className="h-full bg-white border border-gray-200 p-4 shadow-sm flex flex-col">
+        <div className="h-full bg-white border-r border-l border-gray-200 p-4 shadow-sm flex flex-col">
           <div className="text-sm font-semibold text-slate-700 mb-4">
             Навигация
           </div>

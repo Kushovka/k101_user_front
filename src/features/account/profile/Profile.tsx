@@ -157,7 +157,7 @@ const Profile = () => {
   return (
     <section
       className={clsx(
-        "min-h-screen bg-slate-50 py-10 transition-all",
+        "min-h-screen bg-slate-50 py-20 pr-[36px] transition-all",
         isOpen ? "pl-[116px]" : "pl-[336px]",
       )}
     >
@@ -171,7 +171,7 @@ const Profile = () => {
 
       {loading && <Loader fullScreen />}
 
-      <div className="max-w-[1100px] w-full mx-auto flex flex-col gap-8">
+      <div className="w-full mx-auto flex flex-col gap-8">
         <h1 className="text-[24px] font-semibold tracking-tight text-slate-900">
           Профиль пользователя
         </h1>
@@ -271,14 +271,6 @@ const Profile = () => {
               </button>
             </motion.div>
 
-            <div className="col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">
-                Мои обращения
-              </h2>
-
-
-
-            </div>
 
             {/* MODAL */}
             {openModal && (

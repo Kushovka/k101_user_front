@@ -18,6 +18,7 @@ import userApi from "../../../api/userApi";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
+import { useUserStore } from "../../../store/useUserStore";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 import { useSearch } from "./SearchContext";
 
@@ -97,6 +98,7 @@ const getHeaders = () => ({
 });
 
 const Search = () => {
+  const { fetchUser } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [notify, setNotify] = useState<null | string>(null);
@@ -265,6 +267,7 @@ const Search = () => {
       setResult(response.data.entities?.map((item) => item.entity) ?? []);
       setTotalPages(Math.ceil((response.data.total_entities ?? 0) / pageSize));
       setCurrentPage(page);
+      await fetchUser();
       setSeeSearch(true);
     } catch (err: any) {
       const status = err?.response?.status;
@@ -300,11 +303,11 @@ const Search = () => {
   for (let i = startPage; i <= endPage; i++) visiblePages.push(i);
 
   return (
-    <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
+    <section className={clsx("section py-20 pr-[36px]", isOpen ? "pl-[116px]" : "pl-[336px]")}>
       {error && (
         <Toast message={error} type="error" onClose={() => setError(null)} />
       )}
-      <div className="max-w-[1500px] w-full mx-auto flex flex-col gap-6">
+      <div className="w-full mx-auto flex flex-col gap-6">
         <h1 className="text-[20px] font-semibold text-slate-900">Поиск</h1>
         <motion.div
           initial={{ opacity: 0, y: 10 }}

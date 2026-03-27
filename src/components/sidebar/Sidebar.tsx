@@ -60,7 +60,7 @@ const Sidebar: React.FC = () => {
   return (
     <section
       className={clsx(
-        "fixed h-screen text-slate-300 bg-sbr pl-4 py-4 flex flex-col justify-between transition-all duration-300 ease-in-out min-w-[80px]",
+        "fixed z-50 h-screen text-slate-300 bg-sbr pl-4 py-4 flex flex-col justify-between transition-all duration-300 ease-in-out min-w-[80px]",
         isOpen ? "w-[80px]" : "w-[300px]",
       )}
     >

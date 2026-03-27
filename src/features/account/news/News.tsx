@@ -81,7 +81,7 @@ const News = () => {
   return (
     <section
       className={clsx(
-        "min-h-screen bg-slate-50 py-10 pr-[50px] transition-all",
+        "min-h-screen bg-slate-50 py-20 pr-[36px] transition-all",
         isOpen ? "pl-[116px]" : "pl-[336px]",
       )}
     >

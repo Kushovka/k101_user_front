@@ -10,6 +10,7 @@ import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
+import { useUserStore } from "../../../store/useUserStore";
 import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
@@ -73,6 +74,7 @@ const getHeaders = (): Record<string, string> => {
 };
 
 const SearchDetails: React.FC = () => {
+  const { fetchUser } = useUserStore();
   const location = useLocation();
   const navigate = useNavigate();
   const { isOpen, setIsOpen } = useSidebar();
@@ -86,7 +88,9 @@ const SearchDetails: React.FC = () => {
   const [dossierLoading, setDossierLoading] = useState(false);
   const [navDossierOpen, setNavDossierOpen] = useState(true);
 
-  const [exportFormat, setExportFormat] = useState<"pdf" | "txt">("pdf");
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
+    "pdf",
+  );
   const [exportLoading, setExportLoading] = useState(false);
 
   const [complaintTarget, setComplaintTarget] = useState<{
@@ -204,7 +208,7 @@ const SearchDetails: React.FC = () => {
         { person_id: id },
         { headers: getHeaders() },
       );
-
+      await fetchUser();
       setAIDossier(response.data.dossier);
       setGenerationTime(response.data.generation_time);
     } catch (err) {
@@ -214,7 +218,7 @@ const SearchDetails: React.FC = () => {
     }
   };
 
-  const handleExport = async (format: "pdf" | "txt") => {
+  const handleExport = async (format: "pdf" | "txt" | "docx") => {
     try {
       setExportLoading(true);
 
@@ -223,7 +227,7 @@ const SearchDetails: React.FC = () => {
       const safeName =
         `${user.last_name || "person"}_${user.first_name || ""}`.trim();
       const filename = `dossier_${safeName || personId}.${format}`;
-
+      await fetchUser();
       downloadBlob(blob, filename);
     } catch (err: any) {
       const status = err?.response?.status;
@@ -248,7 +252,9 @@ const SearchDetails: React.FC = () => {
   const personId = user.entity_id;
 
   return (
-    <section className={clsx("section", isOpen ? "pl-[116px]" : "pl-[336px]")}>
+    <section
+      className={clsx("section py-20 pr-[36px]", isOpen ? "pl-[116px]" : "pl-[336px]")}
+    >
       {notify && (
         <Toast
           type="access"
@@ -263,11 +269,11 @@ const SearchDetails: React.FC = () => {
         {/* ЛЕВАЯ ФИКС НАВИГАЦИЯ */}
         <div
           className={clsx(
-            "fixed top-0 bottom-0 h-full w-[260px]",
+            "fixed top-12 bottom-0 h-full w-[260px]",
             isOpen ? "left-[140px]" : "left-[360px]",
           )}
         >
-          <div className="h-full bg-white border border-gray-200 p-4 shadow-sm flex flex-col">
+          <div className="h-full bg-white border-r border-l border-gray-200 p-4 shadow-sm flex flex-col">
             <div className="text-sm font-semibold text-slate-700 mb-4">
               Навигация по досье
             </div>
@@ -367,12 +373,13 @@ const SearchDetails: React.FC = () => {
               <select
                 value={exportFormat}
                 onChange={(e) =>
-                  setExportFormat(e.target.value as "pdf" | "txt")
+                  setExportFormat(e.target.value as "pdf" | "txt" | "docx")
                 }
                 className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="pdf">PDF</option>
                 <option value="txt">TXT</option>
+                <option value="docx">DOCX</option>
               </select>
 
               {/* Кнопка скачать */}
