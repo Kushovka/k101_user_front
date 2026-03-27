@@ -20,6 +20,7 @@ import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 import { useSearch } from "./SearchContext";
+import { useUserStore } from "../../../store/useUserStore";
 
 type SearchMode =
   | "name"
@@ -97,6 +98,7 @@ const getHeaders = () => ({
 });
 
 const Search = () => {
+  const { fetchUser } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [notify, setNotify] = useState<null | string>(null);
@@ -265,6 +267,7 @@ const Search = () => {
       setResult(response.data.entities?.map((item) => item.entity) ?? []);
       setTotalPages(Math.ceil((response.data.total_entities ?? 0) / pageSize));
       setCurrentPage(page);
+      await fetchUser();
       setSeeSearch(true);
     } catch (err: any) {
       const status = err?.response?.status;
@@ -300,7 +303,12 @@ const Search = () => {
   for (let i = startPage; i <= endPage; i++) visiblePages.push(i);
 
   return (
-    <section className={clsx("section py-20 pr-[36px]", isOpen ? "pl-[116px]" : "pl-[336px]")}>
+    <section
+      className={clsx(
+        "section py-20 pr-[36px]",
+        isOpen ? "pl-[116px]" : "pl-[336px]",
+      )}
+    >
       {error && (
         <Toast message={error} type="error" onClose={() => setError(null)} />
       )}

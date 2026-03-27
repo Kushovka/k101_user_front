@@ -10,6 +10,7 @@ import userApi from "../../../api/userApi";
 import { ComplaintModal } from "../../../components/field-complaint/ComplaintModal";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
+import { useUserStore } from "../../../store/useUserStore";
 import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
@@ -73,6 +74,7 @@ const getHeaders = (): Record<string, string> => {
 };
 
 const SearchDetails: React.FC = () => {
+  const { fetchUser } = useUserStore();
   const location = useLocation();
   const navigate = useNavigate();
   const { isOpen, setIsOpen } = useSidebar();
@@ -206,7 +208,7 @@ const SearchDetails: React.FC = () => {
         { person_id: id },
         { headers: getHeaders() },
       );
-
+      await fetchUser();
       setAIDossier(response.data.dossier);
       setGenerationTime(response.data.generation_time);
     } catch (err) {
@@ -225,7 +227,7 @@ const SearchDetails: React.FC = () => {
       const safeName =
         `${user.last_name || "person"}_${user.first_name || ""}`.trim();
       const filename = `dossier_${safeName || personId}.${format}`;
-
+      await fetchUser();
       downloadBlob(blob, filename);
     } catch (err: any) {
       const status = err?.response?.status;
