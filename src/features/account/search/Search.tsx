@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import React, { ReactElement, SVGProps, useEffect, useState } from "react";
 import { BsPassportFill } from "react-icons/bs";
 import { FaCalendarAlt } from "react-icons/fa";
+import { HiOutlineIdentification } from "react-icons/hi";
 import {
   IoCallSharp,
   IoCardSharp,
+  IoCarSportSharp,
   IoDocumentTextSharp,
   IoLocationSharp,
   IoMailSharp,
@@ -18,9 +20,9 @@ import userApi from "../../../api/userApi";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
+import { useUserStore } from "../../../store/useUserStore";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 import { useSearch } from "./SearchContext";
-import { useUserStore } from "../../../store/useUserStore";
 
 type SearchMode =
   | "name"
@@ -28,6 +30,8 @@ type SearchMode =
   | "email"
   | "snils"
   | "ipn"
+  | "vin"
+  | "license_plate"
   | "address"
   | "city"
   | "passport"
@@ -90,6 +94,18 @@ const SEARCH_TABS: {
     placeholder: "123456789000",
     icon: <IoCardSharp />,
   },
+  {
+    key: "vin",
+    label: "VIN-номер",
+    placeholder: "VF3MJAHXVHS101043",
+    icon: <HiOutlineIdentification />,
+  },
+  {
+    key: "license_plate",
+    label: "Автомобильный номер",
+    placeholder: "А000АА77",
+    icon: <IoCarSportSharp />,
+  },
 ];
 
 const getHeaders = () => ({
@@ -114,6 +130,8 @@ const Search = () => {
     email: "",
     snils: "",
     ipn: "",
+    vin: "",
+    license_plate: "",
     address: "",
     city: "",
     passport: "",
@@ -195,6 +213,8 @@ const Search = () => {
           email: "",
           snils: "",
           ipn: "",
+          vin: "",
+          license_plate: "",
           address: "",
           city: "",
           passport: "",
