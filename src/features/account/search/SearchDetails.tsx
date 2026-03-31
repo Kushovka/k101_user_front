@@ -14,6 +14,17 @@ import { useUserStore } from "../../../store/useUserStore";
 import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
+  first_name: "Имя",
+  name: "Имя",
+  last_name: "Фамилия",
+  surname: "Фамилия",
+  middle_name: "Отчество",
+  fathername: "Отчество",
+  address: "Адрес",
+  phone: "Телефон",
+  city: "Город",
+  birthday: "Дата рождения",
+  ipn: "ИНН",
   height: "Рост",
   weight: "Вес",
   breast: "Грудь",
@@ -253,7 +264,10 @@ const SearchDetails: React.FC = () => {
 
   return (
     <section
-      className={clsx("section py-20 pr-[36px]", isOpen ? "pl-[116px]" : "pl-[336px]")}
+      className={clsx(
+        "section py-20 pr-[36px]",
+        isOpen ? "pl-[116px]" : "pl-[336px]",
+      )}
     >
       {notify && (
         <Toast
