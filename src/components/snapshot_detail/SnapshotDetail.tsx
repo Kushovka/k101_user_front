@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
+import { exportPersonDossier } from "../../api/search";
+import { useUserStore } from "../../store/useUserStore";
 import { SearchSnapshot } from "../../types/searchDetails.types";
 import { useSidebar } from "../sidebar/SidebarContext";
 import Toast from "../toast/Toast";
@@ -57,12 +59,18 @@ const fieldLabels: Record<string, string> = {
 
 const SnapshotDetail = () => {
   const { isOpen, setIsOpen } = useSidebar();
+  const { fetchUser } = useUserStore();
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const location = useLocation();
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
   const [notify, setNotify] = useState(false);
   const [openMain, setOpenMain] = useState(true);
   const [openDossier, setOpenDossier] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt" | "docx">(
+    "pdf",
+  );
+  const [exportLoading, setExportLoading] = useState(false);
 
   const state = location.state as SearchDetailsState | null;
 
@@ -82,11 +90,11 @@ const SnapshotDetail = () => {
     snapshot?.data?.entities?.[0]?.entity ??
     snapshot?.data?.results?.[0] ??
     null;
-
+ 
   useEffect(() => {
     setIsOpen(true);
   }, [setIsOpen]);
-
+  const personId = user?.entity_id;
   const isValidName = (val: string) => /^\p{L}+$/u.test(val);
 
   const cleanValue = (value: unknown): string => {
@@ -121,6 +129,50 @@ const SnapshotDetail = () => {
     navigator.clipboard.writeText(text);
     setNotify(true);
     setTimeout(() => setNotify(false), 1200);
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExport = async (format: "pdf" | "txt" | "docx") => {
+    try {
+      if (!personId) {
+        setError("Не найден ID пользователя");
+        return;
+      }
+
+      setExportLoading(true);
+
+      const blob = await exportPersonDossier(personId, format);
+
+      const safeName =
+        `${user.last_name || "person"}_${user.first_name || ""}`.trim();
+
+      const filename = `dossier_${safeName || personId}.${format}`;
+
+      downloadBlob(blob, filename);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+
+      if (status === 402) {
+        setError("Недостаточно средств. Пополните баланс");
+      } else if (status === 500) {
+        setError("Ошибка сервера");
+      } else {
+        setError(data?.message || "Ошибка поиска");
+      }
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   if (!snapshot) {
@@ -254,14 +306,54 @@ const SnapshotDetail = () => {
           {cleanValue(user.middle_name)}
         </h1>
 
-        {/* back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
-        >
-          <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
-          Назад
-        </button>
+        {/* button */}
+        <div className="flex items-center justify-between">
+          {/* back button */}
+          <button
+            onClick={() =>
+              navigate("/account/query", {
+                state: {
+                  restore: true,
+                  page: location.state?.page,
+                  mode: location.state?.mode,
+                  values: location.state?.values,
+                },
+              })
+            }
+            className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
+          >
+            <IoExitOutline className="rotate-180 h-[20px] w-[20px] text-slate-600" />
+            Назад
+          </button>
+          <div className="flex items-center gap-3">
+            {/* Select формата */}
+            <select
+              value={exportFormat}
+              onChange={(e) =>
+                setExportFormat(e.target.value as "pdf" | "txt" | "docx")
+              }
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="pdf">PDF</option>
+              <option value="txt">TXT</option>
+              <option value="docx">DOCX</option>
+            </select>
+
+            {/* Кнопка скачать */}
+            <button
+              disabled={exportLoading}
+              onClick={() => handleExport(exportFormat)}
+              className={clsx(
+                "px-4 py-2 rounded-lg text-sm font-medium transition",
+                exportLoading
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-cyan-500 hover:bg-cyan-600 text-white",
+              )}
+            >
+              {exportLoading ? "Скачивание..." : "Скачать"}
+            </button>
+          </div>
+        </div>
 
         {/* MAIN INFO */}
         <motion.div

@@ -36,6 +36,8 @@ const Query: React.FC = () => {
     advanced_ipn: "Поиск по ИНН",
     advanced_address: "Поиск по адресу",
     advanced_passport: "Поиск по паспорту",
+    search_license_plate: "Поиск по автомобильному номеру",
+    search_vin: "Поиск по VIN-номеру",
   };
 
   const fetchHistory = async (page: number) => {

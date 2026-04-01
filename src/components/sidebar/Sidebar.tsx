@@ -4,7 +4,12 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { FiMessageSquare } from "react-icons/fi";
 import { GoChevronRight } from "react-icons/go";
 import { IoIosSearch } from "react-icons/io";
-import { IoDocumentTextOutline, IoExitOutline, IoNewspaperOutline } from "react-icons/io5";
+import {
+  IoCarSportSharp,
+  IoDocumentTextOutline,
+  IoExitOutline,
+  IoNewspaperOutline,
+} from "react-icons/io5";
 import { MdAttachMoney } from "react-icons/md";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -51,11 +56,20 @@ const Sidebar: React.FC = () => {
       icon: <IoNewspaperOutline />,
       path: "/account/news",
     },
-    { name: "Поиск", icon: <IoIosSearch />, path: "/account/search" },
+    { name: "Поиск физ.лица", icon: <IoIosSearch />, path: "/account/search" },
+    {
+      name: "Поиск авто",
+      icon: <IoCarSportSharp />,
+      path: "/account/search-car",
+    },
   ];
 
-  const isActive = (path: string): boolean =>
-    location.pathname.startsWith(path);
+  const isActive = (path: string): boolean => {
+    if (path === "/account/search") {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <section
