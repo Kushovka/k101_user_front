@@ -19,15 +19,16 @@ import PaymentSuccess from "./components/paymentSuccess/PaymentSuccess";
 import { SidebarProvider } from "./components/sidebar/SidebarContext";
 import SnapshotDetail from "./components/snapshot_detail/SnapshotDetail";
 import Appeals from "./features/account/appeals/Appeals";
+import News from "./features/account/news/News";
 import Plans from "./features/account/plans/Plans";
 import Profile from "./features/account/profile/Profile";
 import Query from "./features/account/query/Query";
+import SearchByCar from "./features/account/search/SearchByCar";
 import { SearchProvider } from "./features/account/search/SearchContext";
 import SearchDetails from "./features/account/search/SearchDetails";
 import Register from "./features/auth/Register";
 import Verify2FA from "./features/auth/Verify2FA";
 import { useBankIdleLogout } from "./hooks/logout/useBankIdleLogout";
-import News from "./features/account/news/News";
 
 const App: React.FC = () => {
   const isAuth = Boolean(localStorage.getItem("access_token"));
@@ -117,6 +118,18 @@ const App: React.FC = () => {
             }
           >
             <Route index element={<Search />} />
+            <Route path=":id" element={<SearchDetails />} />
+          </Route>
+
+          <Route
+            path="search-car/*"
+            element={
+              <SearchProvider>
+                <Outlet />
+              </SearchProvider>
+            }
+          >
+            <Route index element={<SearchByCar />} />
             <Route path=":id" element={<SearchDetails />} />
           </Route>
 

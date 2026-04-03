@@ -14,6 +14,17 @@ import { useUserStore } from "../../../store/useUserStore";
 import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
+  first_name: "Имя",
+  name: "Имя",
+  last_name: "Фамилия",
+  surname: "Фамилия",
+  middle_name: "Отчество",
+  fathername: "Отчество",
+  address: "Адрес",
+  phone: "Телефон",
+  city: "Город",
+  birthday: "Дата рождения",
+  ipn: "ИНН",
   height: "Рост",
   weight: "Вес",
   breast: "Грудь",
@@ -100,7 +111,7 @@ const SearchDetails: React.FC = () => {
 
   /* ---------------- helpers ---------------- */
   const state = location.state as SearchDetailsState | null;
-
+  const from = location.state?.from;
   const groupRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const sectionRefs = useRef<{
@@ -357,14 +368,19 @@ const SearchDetails: React.FC = () => {
             {/* back button */}
             <button
               onClick={() =>
-                navigate("/account/search", {
-                  state: {
-                    restore: true,
-                    page: location.state?.page,
-                    mode: location.state?.mode,
-                    values: location.state?.values,
+                navigate(
+                  from === "search-car"
+                    ? "/account/search-car"
+                    : "/account/search",
+                  {
+                    state: {
+                      restore: true,
+                      page: location.state?.page,
+                      mode: location.state?.mode,
+                      values: location.state?.values,
+                    },
                   },
-                })
+                )
               }
               className="flex items-center gap-3 h-[40px] w-fit border border-gray-300 text-slate-700 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition px-3 text-[14px]"
             >
