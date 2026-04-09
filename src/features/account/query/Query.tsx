@@ -160,7 +160,10 @@ const Query: React.FC = () => {
 
                   {/* query */}
                   <span className="text-slate-700">
-                    {searchTypeLabels[item.request_type] ?? item.request_type}
+                    {item.request_type === "dossier"
+                      ? ""
+                      : (searchTypeLabels[item.request_type] ??
+                        item.request_type)}
                   </span>
 
                   {/* TYPE */}
