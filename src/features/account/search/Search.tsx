@@ -17,7 +17,8 @@ import userApi from "../../../api/userApi";
 import Loader from "../../../components/loader/Loader";
 import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
-import { useUserStore } from "../../../store/useUserStore";
+
+import { FaTelegram } from "react-icons/fa";
 import { SearchResponse, SearchResultItem } from "../../../types/search";
 import { useSearch } from "./SearchContext";
 
@@ -29,6 +30,7 @@ type SearchMode =
   | "ipn"
   | "address"
   | "city"
+  | "telegram_username"
   | "passport"
   | "gender"
   | "birthday"
@@ -102,6 +104,17 @@ const SEARCH_GROUPS: SearchGroup[] = [
       },
     ],
   },
+  {
+    title: "Социальные сети",
+    fields: [
+      {
+        key: "telegram_username",
+        label: "Никнейм Telegram",
+        placeholder: "Durov",
+        icon: <FaTelegram />,
+      },
+    ],
+  },
 ];
 const FILTER_LABELS: Record<string, string> = {
   name: "ФИО",
@@ -111,6 +124,7 @@ const FILTER_LABELS: Record<string, string> = {
   ipn: "ИНН",
   address: "Адрес",
   city: "Город",
+  telegram_username: "Никнейм Telegram",
   passport: "Паспорт",
   gender: "Пол",
   birthday: "Дата рождения",
@@ -133,6 +147,8 @@ const FILTER_GROUPS: Record<string, string> = {
   passport: "Документы",
   snils: "Документы",
   ipn: "Документы",
+
+  telegram_username: "Социальные сети",
 };
 const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("admin_access_token")}`,
@@ -140,7 +156,6 @@ const getHeaders = () => ({
 });
 
 const Search = () => {
-  const { fetchUser } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [notify, setNotify] = useState<null | string>(null);
@@ -154,6 +169,7 @@ const Search = () => {
     Основное: true,
     "Личная информация": true,
     Документы: true,
+    "Социальные сети": true,
   });
 
   // хранит значения всех табов
@@ -165,6 +181,7 @@ const Search = () => {
     ipn: "",
     address: "",
     city: "",
+    telegram_username: "",
     passport: "",
     gender: "",
     birthday: "",
@@ -259,6 +276,7 @@ const Search = () => {
           ipn: "",
           address: "",
           city: "",
+          telegram_username: "",
           passport: "",
           gender: "",
           birthday: "",
@@ -346,7 +364,7 @@ const Search = () => {
       setResult(response.data.entities?.map((item) => item.entity) ?? []);
       setTotalPages(Math.ceil((response.data.total_entities ?? 0) / pageSize));
       setCurrentPage(page);
-      await fetchUser();
+
       setSeeSearch(true);
     } catch (err: any) {
       const status = err?.response?.status;
@@ -476,7 +494,7 @@ const Search = () => {
                     placeholder="+7 999 123-45-67"
                     type="text"
                     className="h-[38px] px-3 border border-gray-300 rounded-lg w-full"
-                    value={values.phone}
+                    value={values.name}
                     onChange={(e) =>
                       setValues((prev) => ({
                         ...prev,
@@ -825,6 +843,7 @@ const Search = () => {
                       ipn: "",
                       address: "",
                       city: "",
+                      telegram_username: "",
                       passport: "",
                       gender: "",
                       birthday: "",
