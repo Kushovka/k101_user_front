@@ -14,7 +14,21 @@ import { useUserStore } from "../../../store/useUserStore";
 import type { SearchUser } from "../../../types/searchDetails.types";
 
 const fieldLabels: Record<string, string> = {
- 
+  first_name: "Имя",
+  name: "Имя",
+  last_name: "Фамилия",
+  surname: "Фамилия",
+  middle_name: "Отчество",
+  fathername: "Отчество",
+  address: "Адрес",
+  phone: "Телефон",
+  city: "Город",
+  birthday: "Дата рождения",
+  ipn: "ИНН",
+  nickname: "Имя",
+  number: "Номер паспорта",
+  serial: "Серия паспорта",
+  snils: "СНИЛС",
 };
 
 type SearchDetailsState = {
@@ -675,6 +689,7 @@ const SearchDetails: React.FC = () => {
         <ComplaintModal
           docId={complaintTarget.docId}
           fields={complaintTarget.fields}
+          fieldLabels={fieldLabels}
           onClose={() => setComplaintTarget(null)}
         />
       )}
