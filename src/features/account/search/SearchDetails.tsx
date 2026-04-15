@@ -25,44 +25,10 @@ const fieldLabels: Record<string, string> = {
   city: "Город",
   birthday: "Дата рождения",
   ipn: "ИНН",
-  height: "Рост",
-  weight: "Вес",
-  breast: "Грудь",
-  "clothing size": "Размер одежды",
-  "shoes size": "Размер обуви",
   nickname: "Имя",
-  anketa_id: "Номер анкеты",
-  area: "Район",
-  metro: "Метро",
-  "updated ": "Дата обновления",
-  humannumber: "Номер очереди",
-  pic_max: "Фотография",
-  external_share_link: "Ссылка на профиль",
   number: "Номер паспорта",
   serial: "Серия паспорта",
   snils: "СНИЛС",
-  delivery: "Доставка",
-  delivery2: "Доставка",
-  yandex: "Яндекс",
-  comment: "Комментарий",
-  commission: "Комиссия",
-  "currency code": "Валюта",
-  "date added": "Дата заказа",
-  ip: "IP адрес",
-  "order id": "ID заказа",
-  "order status id": "ID статуса",
-  password: "Пароль",
-  "payment code": "Код оплаты",
-  "payment country": "Страна оплаты",
-  "payment method": "Метод оплаты",
-  "payment postcode": "Посткод оплаты",
-  "payment zone": "Зона оплаты",
-  "shipping address 1": "Адрес доставки",
-  "shipping city": "Город доставки",
-  "shipping country": "Страна доставки",
-  "shipping method": "Метод доставки",
-  status: "Статус",
-  "user agent": "Устройство пользователя",
 };
 
 type SearchDetailsState = {
@@ -723,6 +689,7 @@ const SearchDetails: React.FC = () => {
         <ComplaintModal
           docId={complaintTarget.docId}
           fields={complaintTarget.fields}
+          fieldLabels={fieldLabels}
           onClose={() => setComplaintTarget(null)}
         />
       )}

@@ -6,12 +6,14 @@ import Toast from "../toast/Toast";
 type ComplaintModalProps = {
   docId: string;
   fields: string[];
+  fieldLabels?: Record<string, string>;
   onClose: () => void;
 };
 
 export function ComplaintModal({
   docId,
   fields,
+  fieldLabels,
   onClose,
 }: ComplaintModalProps) {
   const [message, setMessage] = useState("");
@@ -39,7 +41,6 @@ export function ComplaintModal({
       setTimeout(() => {
         onClose();
       }, 1500);
-     
     } catch (error) {
       console.error(error);
       setNotify("errorComplaint");
@@ -95,7 +96,7 @@ export function ComplaintModal({
           <option value="">Выберите поле</option>
           {fields.map((field) => (
             <option key={field} value={field}>
-              {field}
+              {fieldLabels?.[field.toLowerCase()] ?? field}
             </option>
           ))}
         </select>
