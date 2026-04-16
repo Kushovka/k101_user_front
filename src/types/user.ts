@@ -3,39 +3,56 @@ export type UserRole = "user" | "admin";
 export interface ApiUser {
   id: string;
   username: string;
+  telegram_username: string;
   first_name: string;
   last_name: string;
   email: string;
   role: UserRole;
   registration_date: string;
   is_blocked: boolean;
-  is_email_verified: boolean;
   balance?: number;
   free_requests_count?: number;
   all_requests_count?: number;
   total_spent?: number;
+  last_login?: string;
 }
 
 export interface TableUser {
   id: string;
   nickName: string;
+  telegramUsername: string;
   name: string;
   surname: string;
   email: string;
   role: "User" | "Admin";
   registrationDate: string;
   status: "Blocked" | "Active";
-  confirmationEmail: "Yes" | "No";
   identifier: string;
   balance: number;
   freeRequest: number;
   allRequest: number;
   totalSpend: number;
+  lastLogin: string;
 }
 
 export interface UsersResponse {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
   users: ApiUser[];
 }
+
+export type UsersSortField =
+  | "id"
+  | "first_name"
+  | "last_name"
+  | "username"
+  | "email"
+  | "role"
+  | "last_login";
+
+export type SortOrder = "asc" | "desc";
 
 export interface CreatedUserResponse {
   username: string;
@@ -51,11 +68,13 @@ export interface UserDetailsApi {
   role: UserRole;
   registration_date: string;
   is_blocked: boolean;
-  is_email_verified: boolean;
   balance?: number;
   free_requests_count?: number;
   all_requests_count?: number;
   total_spent?: number;
+  recent_requests?: [];
+  total_requests?: number;
+  last_login?: string;
 }
 
 export interface UserDetailsUI {
@@ -67,17 +86,23 @@ export interface UserDetailsUI {
   role: "User" | "Admin";
   registrationDate: string;
   status: "Active" | "Blocked";
-  confirmationEmail: "Yes" | "No";
   balance: number;
   freeRequest: number;
   allRequest: number;
   totalSpend: number;
+  lastLogin: string;
 }
 
 export interface UpdateUserPayload {
   first_name: string;
   last_name: string;
   email: string;
+}
+
+export interface TelegramLinkResponse {
+  deep_link: string;
+  expires_in: number;
+  message: string;
 }
 
 export interface DepositPayload {
@@ -98,4 +123,25 @@ export interface ApiTelegramUser {
 export interface TelegramUsersResponse {
   requests: ApiTelegramUser[];
 }
+export type RequestStatus =
+  | "success"
+  | "insufficient_funds"
+  | "failed"
+  | string;
+export interface UserRequestItem {
+  id: number;
+  request_type: string;
+  request_cost: string;
+  status: "success" | "insufficient_funds" | string;
+  request_date: string;
+  search_query: string;
+  results_count: number | null;
+}
 
+export interface UserRequestsResponse {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+  requests: UserRequestItem[];
+}
