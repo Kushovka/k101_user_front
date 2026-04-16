@@ -1,9 +1,10 @@
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { FaTelegramPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { createInvoice } from "../../../api/payments";
-import { updateProfile } from "../../../api/profile";
+import { linkTelegramAccount, updateProfile } from "../../../api/profile";
 import { getCurrentUser } from "../../../api/users";
 import EditableField from "../../../components/editable-field-props/EditableFieldProps";
 import Loader from "../../../components/loader/Loader";
@@ -11,7 +12,12 @@ import { useSidebar } from "../../../components/sidebar/SidebarContext";
 import Toast from "../../../components/toast/Toast";
 import { ApiUser } from "../../../types/user";
 
-type NotifyType = "access_pay" | "error_pay" | "access_save" | "error_save";
+type NotifyType =
+  | "access_pay"
+  | "error_pay"
+  | "access_save"
+  | "error_save"
+  | "error_telegram";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -78,6 +84,21 @@ const Profile = () => {
     }
   };
 
+  const handleTelegramLink = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await linkTelegramAccount();
+      window.open(response.deep_link, "_blank", "noopener,noreferrer");
+    } catch {
+      setNotify("error_telegram");
+      setTimeout(() => setNotify(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ---------------- deposit ---------------- */
   const handleDeposit = async () => {
     if (payInput < 100) {
@@ -137,6 +158,10 @@ const Profile = () => {
     error_save: {
       type: "error",
       message: "Ошибка при обновлении профиля",
+    },
+    error_telegram: {
+      type: "error",
+      message: "Не удалось создать ссылку для привязки Telegram",
     },
   };
 
@@ -228,6 +253,29 @@ const Profile = () => {
                 </span>
               </p>
             </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-1">
+                <span className="text-slate-600">Telegram:</span>
+                <span className="font-medium text-slate-900">
+                  {user?.telegram_username
+                    ? `@${user.telegram_username}`
+                    : "Не привязан"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleTelegramLink}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#27A7E7] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#1d96d3]"
+              >
+                <FaTelegramPlane size={16} />
+                <span>
+                  {user?.telegram_username
+                    ? "Перепривязать Telegram"
+                    : "Привязать Telegram"}
+                </span>
+              </button>
+            </div>
             {/* <a href={link} target="_blank" rel="noreferrer">
                 <button className="px-4 py-2 rounded-lg bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-600 transition">
                   привязать тг
@@ -266,8 +314,6 @@ const Profile = () => {
                   {user?.free_requests_count ?? 0}
                 </span>
               </p>
-
-
             </div>
 
             <button
